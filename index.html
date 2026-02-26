@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ドイツ旅行 2026 | 旅のしおり</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Noto+Serif+JP:wght@300;400;700&family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B1929;
+    --navy-mid: #14273D;
+    --navy-light: #1E3A55;
+    --gold: #C9952A;
+    --gold-light: #E8C06A;
+    --cream: #F7F2E9;
+    --cream-dark: #EDE5D5;
+    --white: #FEFCF8;
+    --text: #2A1F14;
+    --text-light: #6B5B45;
+    --accent-red: #C0392B;
+    --accent-teal: #2A7F7F;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--navy);
+    color: var(--cream);
+    font-family: 'Josefin Sans', 'Noto Serif JP', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ===== COVER ===== */
+  .cover {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #0B1929 0%, #14273D 50%, #0D2235 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 40px 20px;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 80% 50% at 50% 120%, rgba(201,149,42,0.12) 0%, transparent 70%),
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.03) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .cover-grid {
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(201,149,42,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,149,42,0.06) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .cover-ornament {
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: var(--gold);
+    opacity: 0.8;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    animation: fadeUp 1s ease both;
+  }
+
+  .cover-title {
+    font-family: 'Playfair Display', 'Noto Serif JP', serif;
+    font-size: clamp(52px, 10vw, 110px);
+    font-weight: 900;
+    line-height: 0.9;
+    text-align: center;
+    color: var(--cream);
+    animation: fadeUp 1s 0.2s ease both;
+    position: relative;
+  }
+
+  .cover-title span {
+    display: block;
+    color: var(--gold);
+    font-style: italic;
+    font-size: 0.55em;
+    letter-spacing: 2px;
+  }
+
+  .cover-subtitle {
+    font-size: 12px;
+    letter-spacing: 8px;
+    color: rgba(247,242,233,0.5);
+    margin-top: 28px;
+    text-transform: uppercase;
+    animation: fadeUp 1s 0.4s ease both;
+  }
+
+  .cover-line {
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+    margin: 32px auto;
+    animation: fadeUp 1s 0.5s ease both;
+  }
+
+  .cover-meta {
+    display: flex;
+    gap: 48px;
+    animation: fadeUp 1s 0.6s ease both;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .cover-meta-item {
+    text-align: center;
+  }
+
+  .cover-meta-label {
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .cover-meta-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--cream);
+  }
+
+  .cover-cities {
+    position: absolute;
+    bottom: 40px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: rgba(247,242,233,0.35);
+    text-transform: uppercase;
+    animation: fadeUp 1s 0.8s ease both;
+  }
+
+  .cover-cities span { opacity: 0.4; }
+
+  /* ===== SECTION LAYOUT ===== */
+  .section {
+    background: var(--cream);
+    color: var(--text);
+    position: relative;
+  }
+
+  .section-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 24px;
+  }
+
+  /* ===== OVERVIEW ===== */
+  .overview-header {
+    text-align: center;
+    margin-bottom: 64px;
+  }
+
+  .section-tag {
+    font-size: 10px;
+    letter-spacing: 5px;
+    color: var(--gold);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', 'Noto Serif JP', serif;
+    font-size: clamp(32px, 5vw, 52px);
+    color: var(--navy);
+    line-height: 1.1;
+  }
+
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2px;
+    background: var(--navy);
+    border: 2px solid var(--navy);
+    margin-bottom: 48px;
+  }
+
+  .overview-card {
+    background: var(--white);
+    padding: 32px 24px;
+    text-align: center;
+    transition: background 0.3s;
+  }
+
+  .overview-card:hover { background: var(--cream-dark); }
+
+  .overview-card-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .overview-card-label {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .overview-card-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--navy);
+    font-weight: 700;
+  }
+
+  .overview-card-sub {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+
+  /* ===== IMPORTANT INFO ===== */
+  .info-box {
+    background: var(--navy);
+    color: var(--cream);
+    padding: 28px 32px;
+    border-left: 4px solid var(--gold);
+    margin-bottom: 24px;
+  }
+
+  .info-box-title {
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .info-box p {
+    font-size: 14px;
+    line-height: 1.8;
+    color: rgba(247,242,233,0.8);
+  }
+
+  .info-box strong { color: var(--gold-light); }
+
+  /* ===== DAYS SECTION ===== */
+  .days-section {
+    background: var(--navy);
+    color: var(--cream);
+  }
+
+  .days-section .section-inner {
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+
+  .days-header {
+    text-align: center;
+    margin-bottom: 80px;
+  }
+
+  .days-header .section-tag { color: var(--gold); }
+
+  .days-header .section-title {
+    color: var(--cream);
+  }
+
+  /* ===== DAY CARD ===== */
+  .day-card {
+    margin-bottom: 80px;
+    animation: fadeUp 0.6s ease both;
+    position: relative;
+  }
+
+  .day-card:not(:last-child)::after {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, rgba(201,149,42,0.4), transparent);
+    margin: 0 auto;
+    position: relative;
+    top: 20px;
+  }
+
+  .day-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .day-number-block {
+    flex-shrink: 0;
+    width: 72px;
+    text-align: center;
+  }
+
+  .day-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 56px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--gold);
+    opacity: 0.25;
+    display: block;
+  }
+
+  .day-label {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    display: block;
+    margin-top: 4px;
+  }
+
+  .day-info { flex: 1; }
+
+  .day-date {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 4vw, 36px);
+    color: var(--cream);
+    margin-bottom: 6px;
+  }
+
+  .day-location {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--gold-light);
+    text-transform: uppercase;
+  }
+
+  .day-badge {
+    padding: 6px 14px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 8px;
+  }
+
+  .badge-flight { border-color: #4A9FD4; color: #4A9FD4; }
+  .badge-train { border-color: #E83C3C; color: #E83C3C; }
+  .badge-explore { border-color: var(--gold); color: var(--gold); }
+  .badge-museum { border-color: #7AC99A; color: #7AC99A; }
+  .badge-departure { border-color: #B06ED4; color: #B06ED4; }
+
+  /* ===== TIMELINE ===== */
+  .timeline {
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 12px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--gold), rgba(201,149,42,0.1));
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+    padding: 20px 24px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,149,42,0.12);
+    transition: background 0.3s, border-color 0.3s;
+  }
+
+  .timeline-item:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(201,149,42,0.3);
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -34px;
+    top: 24px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,149,42,0.2);
+  }
+
+  .timeline-item.highlight {
+    background: rgba(201,149,42,0.08);
+    border-color: rgba(201,149,42,0.35);
+  }
+
+  .timeline-item.highlight::before {
+    background: var(--gold-light);
+    box-shadow: 0 0 0 4px rgba(201,149,42,0.3), 0 0 12px rgba(201,149,42,0.4);
+  }
+
+  .tl-time {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .tl-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--cream);
+    margin-bottom: 4px;
+  }
+
+  .tl-desc {
+    font-size: 13px;
+    color: rgba(247,242,233,0.6);
+    line-height: 1.6;
+  }
+
+  .tl-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .tl-tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(247,242,233,0.6);
+    border-radius: 2px;
+  }
+
+  .tl-tag.important {
+    background: rgba(201,149,42,0.15);
+    color: var(--gold-light);
+  }
+
+  /* ===== TICKET BLOCK ===== */
+  .ticket-block {
+    margin-top: 12px;
+    padding: 14px 16px;
+    background: rgba(0,0,0,0.25);
+    border-left: 3px solid var(--gold);
+    font-size: 12px;
+    color: rgba(247,242,233,0.7);
+    line-height: 1.8;
+  }
+
+  .ticket-block strong { color: var(--gold-light); font-size: 13px; }
+
+  /* ===== HOTEL CARD ===== */
+  .hotel-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(201,149,42,0.25);
+    padding: 20px 24px;
+    margin-top: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .hotel-icon { font-size: 28px; flex-shrink: 0; }
+
+  .hotel-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    color: var(--cream);
+    margin-bottom: 4px;
+  }
+
+  .hotel-detail {
+    font-size: 12px;
+    color: rgba(247,242,233,0.55);
+    line-height: 1.7;
+  }
+
+  /* ===== NOTE BLOCK ===== */
+  .note-block {
+    padding: 14px 18px;
+    background: rgba(192,57,43,0.12);
+    border-left: 3px solid var(--accent-red);
+    margin-top: 12px;
+    font-size: 13px;
+    color: rgba(247,242,233,0.75);
+    line-height: 1.7;
+  }
+
+  .note-block strong { color: #E87070; }
+
+  /* ===== FLIGHT CARD ===== */
+  .flight-card {
+    background: rgba(74,159,212,0.08);
+    border: 1px solid rgba(74,159,212,0.25);
+    padding: 20px 24px;
+    margin-top: 8px;
+  }
+
+  .flight-route {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .flight-code {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--cream);
+  }
+
+  .flight-arrow {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(74,159,212,0.7);
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+
+  .flight-arrow::before, .flight-arrow::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(74,159,212,0.3);
+  }
+
+  .flight-detail {
+    font-size: 12px;
+    color: rgba(247,242,233,0.55);
+    line-height: 1.8;
+  }
+
+  .flight-detail strong { color: rgba(74,159,212,0.9); }
+
+  /* ===== MAP LINK ===== */
+  .map-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--gold);
+    text-decoration: none;
+    margin-top: 8px;
+    border-bottom: 1px solid rgba(201,149,42,0.3);
+    padding-bottom: 2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .map-link:hover { color: var(--gold-light); border-color: var(--gold-light); }
+
+  /* ===== PRINT BUTTON ===== */
+  .print-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 24px;
+    background: rgba(11,25,41,0.9);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(201,149,42,0.15);
+  }
+
+  .print-btn {
+    padding: 8px 24px;
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .print-btn:hover {
+    background: var(--gold);
+    color: var(--navy);
+  }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    background: var(--navy);
+    border-top: 1px solid rgba(201,149,42,0.2);
+    padding: 60px 24px;
+    text-align: center;
+  }
+
+  .footer-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  .footer-detail {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(247,242,233,0.35);
+    line-height: 2;
+    text-transform: uppercase;
+  }
+
+  /* ===== EMERGENCY INFO ===== */
+  .emergency-section {
+    background: var(--cream);
+    color: var(--text);
+  }
+
+  .emergency-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2px;
+    background: var(--navy);
+    border: 2px solid var(--navy);
+  }
+
+  .emergency-card {
+    background: var(--white);
+    padding: 28px 24px;
+  }
+
+  .emergency-card-title {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .emergency-card-main {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+
+  .emergency-card-detail {
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.7;
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== PRINT STYLES ===== */
+  @media print {
+    .print-bar { display: none; }
+    body { background: white; color: black; }
+    .cover {
+      background: var(--navy);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .days-section {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .day-card { page-break-inside: avoid; }
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    .day-header { flex-direction: column; gap: 12px; }
+    .day-number-block { display: none; }
+    .timeline { padding-left: 28px; }
+    .cover-meta { gap: 28px; }
+    .cover-cities { display: none; }
+    .section-inner { padding: 48px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Print bar -->
+<div class="print-bar">
+  <button class="print-btn" onclick="window.print()">🖨 印刷 / PDF保存</button>
+</div>
+
+<!-- ===== COVER ===== -->
+<div class="cover" style="padding-top: 80px;">
+  <div class="cover-grid"></div>
+  <div class="cover-ornament">✦ Reiseführer · Travel Itinerary ✦</div>
+  <h1 class="cover-title">
+    Deutschland
+    <span>ドイツ旅行 2026</span>
+  </h1>
+  <p class="cover-subtitle">Frankfurt · Köln · München · Neuschwanstein · Zugspitze</p>
+  <div class="cover-line"></div>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">出発</div>
+      <div class="cover-meta-value">Feb 26</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">日数</div>
+      <div class="cover-meta-value">8 Days</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">帰国</div>
+      <div class="cover-meta-value">Mar 5</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">人数</div>
+      <div class="cover-meta-value">3 名</div>
+    </div>
+  </div>
+  <div class="cover-cities">
+    <span>NRT</span> ✈ <span>DOH</span> ✈ <span>FRA</span> 🚄 <span>MUC</span> ✈ <span>DOH</span> ✈ <span>NRT</span>
+  </div>
+</div>
+
+<!-- ===== OVERVIEW ===== -->
+<div class="section">
+  <div class="section-inner">
+    <div class="overview-header">
+      <span class="section-tag">Trip Overview</span>
+      <h2 class="section-title">旅のあらまし</h2>
+    </div>
+
+    <div class="overview-grid">
+      <div class="overview-card">
+        <span class="overview-card-icon">✈️</span>
+        <div class="overview-card-label">航空会社</div>
+        <div class="overview-card-value">Qatar Airways</div>
+        <div class="overview-card-sub">Booking: 8XBPGA</div>
+      </div>
+      <div class="overview-card">
+        <span class="overview-card-icon">🏨</span>
+        <div class="overview-card-label">フランクフルト</div>
+        <div class="overview-card-value">Trip Inn Minerva</div>
+        <div class="overview-card-sub">2/27 – 3/1（3泊）</div>
+      </div>
+      <div class="overview-card">
+        <span class="overview-card-icon">🏨</span>
+        <div class="overview-card-label">ミュンヘン</div>
+        <div class="overview-card-value">Creatif Hotel Elephant</div>
+        <div class="overview-card-sub">3/1 – 3/4（3泊）</div>
+      </div>
+      <div class="overview-card">
+        <span class="overview-card-icon">🎒</span>
+        <div class="overview-card-label">手荷物</div>
+        <div class="overview-card-value">30kg × 3名</div>
+        <div class="overview-card-sub">Qatar BGG:30K</div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">⚠️ 重要な注意事項</div>
+      <p>
+        ・<strong>DBチケット（ICE）</strong>はキャンセル不可。乗車時に<strong>身分証明書（パスポート）</strong>が必要。<br>
+        ・<strong>ノイシュバンシュタイン城チケット</strong>は指定時刻厳守。遅刻すると無効・返金不可。<br>
+        ・<strong>BMW Museum</strong>はツアー開始15分前にFoyerへ集合。<br>
+        ・<strong>ショコラーデンミュージアム</strong>は入場時にスキャンが必要。印刷 or スマホ表示で対応可。<br>
+        ・各ホテルチェックイン時に<strong>パスポート提示</strong>とデポジット（クレジットカードまたは現金）が必要。
+      </p>
+    </div>
+
+    <div class="info-box" style="border-left-color: #4A9FD4;">
+      <div class="info-box-title" style="color: #4A9FD4;">📞 緊急連絡先</div>
+      <p>
+        旅行会社（24時間日本語対応）: <strong>+81 3456 30842</strong><br>
+        ※土・日深夜24:30〜翌8:00のみ英語対応（日本語通訳介在可）
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DAYS ===== -->
+<div class="days-section section">
+  <div class="section-inner">
+    <div class="days-header">
+      <span class="section-tag">Day by Day</span>
+      <h2 class="section-title" style="color:var(--cream);">日程詳細</h2>
+    </div>
+
+    <!-- DAY 1 -->
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-number-block">
+          <span class="day-number">1</span>
+          <span class="day-label">Day</span>
+        </div>
+        <div class="day-info">
+          <div class="day-date">2月26日（木）</div>
+          <div class="day-location">🇯🇵 Tokyo → 🇶🇦 Doha</div>
+        </div>
+        <div class="day-badge badge-flight">✈ Flight</div>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="tl-time">〜 14:55 頃</div>
+          <div class="tl-title">成田空港 第2ターミナル 到着・チェックイン</div>
+          <div class="tl-desc">出発2時間前までにチェックイン手続きを完了してください。</div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">16:55 発</div>
+          <div class="tl-title">✈ NRT → DOH｜Qatar Airways QR809</div>
+          <div class="flight-card">
+            <div class="flight-route">
+              <div class="flight-code">NRT</div>
+              <div class="flight-arrow">QR 809</div>
+              <div class="flight-code">DOH</div>
+            </div>
+            <div class="flight-detail">
+              <strong>成田国際空港 T2</strong> 16:55 発 → <strong>ドーハ ハマド国際空港</strong> 23:45 着<br>
+              座席: <strong>41H</strong>｜エコノミー｜Zone 1｜E-ticket: 1572133099743
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">23:45 着</div>
+          <div class="tl-title">ドーハ ハマド国際空港 到着・乗り継ぎ</div>
+          <div class="tl-desc">自身で乗り継ぎ手続きをお願いします。次便まで約2時間半。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 2 -->
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-number-block">
+          <span class="day-number">2</span>
+          <span class="day-label">Day</span>
+        </div>
+        <div class="day-info">
+          <div class="day-date">2月27日（金）</div>
+          <div class="day-location">🇶🇦 Doha → 🇩🇪 Frankfurt → Köln</div>
+        </div>
+        <div class="day-badge badge-flight">✈ Flight + 🚄 ICE</div>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item highlight">
+          <div class="tl-time">02:20 発</div>
+          <div class="tl-title">✈ DOH → FRA｜Qatar Airways QR069</div>
+          <div class="flight-card">
+            <div class="flight-route">
+              <div class="flight-code">DOH</div>
+              <div class="flight-arrow">QR 069</div>
+              <div class="flight-code">FRA</div>
+            </div>
+            <div class="flight-detail">
+              <strong>ドーハ ハマド国際空港</strong> 02:20 発 → <strong>フランクフルト国際空港 T2</strong> 06:50 着<br>
+              座席: <strong>36F</strong>｜エコノミー｜E-ticket: 1572133099743
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">06:50 着</div>
+          <div class="tl-title">フランクフルト国際空港 到着</div>
+          <div class="tl-desc">入国審査後、ホテルへ移動。チェックイン時間まで荷物預けが可能です。<br>ホテル: <strong>Trip Inn Minerva</strong>｜Stuttgarter Str. 31, 60329 Frankfurt</div>
+          <div class="tl-tags">
+            <span class="tl-tag important">⚠ パスポート・デポジット必要</span>
+            <span class="tl-tag">チェックイン 12:00〜</span>
+          </div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">12:07 発（Gleis 不明）</div>
+          <div class="tl-title">🚄 Frankfurt(Main)Hbf → Köln Messe/Deutz</div>
+          <div class="ticket-block">
+            <strong>ICE 724</strong>｜2等車｜Wagen 23, Platz 26 / 28 / 37（窓側2・通路側1）<br>
+            Res. Nr: 808260060382｜到着 13:14 Gleis 12
+          </div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">15:30</div>
+          <div class="tl-title">🍫 ショコラーデン ミュージアム（Schokoladenmuseum Köln）</div>
+          <div class="tl-desc">5000年のカカオと チョコレートの歴史。ガラス張りのチョコレート工場が見学できます。</div>
+          <div class="ticket-block">
+            学生/Azubi料金: <strong>€13/人 × 3名</strong>｜入場時スキャン必要（スマホ可）<br>
+            住所: Am Schokoladenmuseum 1a, 50678 Köln
+          </div>
+          <a class="map-link" href="https://maps.google.com/?q=Schokoladenmuseum+Köln" target="_blank">📍 Google Maps</a>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">20:18 発 Gleis 4</div>
+          <div class="tl-title">🚄 Köln Hbf → Frankfurt(Main)Hbf</div>
+          <div class="ticket-block">
+            <strong>ICE 19</strong>｜2等車｜Wagen 25, Platz 45 / 46 / 51（窓側2・通路側1）<br>
+            Res. Nr: 808560101355｜到着 21:27 Gleis 2
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">21:27</div>
+          <div class="tl-title">フランクフルト中央駅着・ホテルへ</div>
+          <div class="tl-desc">本日の宿泊: Trip Inn Minerva（朝食付）</div>
+        </div>
+      </div>
+
+      <div class="hotel-card">
+        <div class="hotel-icon">🏨</div>
+        <div>
+          <div class="hotel-name">Trip Inn Hotel Minerva (旧 MINERVA)</div>
+          <div class="hotel-detail">
+            Stuttgarter Strasse 31, 60329 Frankfurt<br>
+            Tel: +49 69 2561 7600｜Ref: 202-8568250<br>
+            トリプル クラシック｜朝食付｜2/27 – 3/1（3泊）<br>
+            チェックイン: 12:00〜5:30｜チェックアウト: 〜11:00
+          </div>
+          <a class="map-link" href="https://maps.google.com/?q=Trip+Inn+Minerva+Frankfurt" target="_blank">📍 Google Maps</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 3 -->
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-number-block">
+          <span class="day-number">3</span>
+          <span class="day-label">Day</span>
+        </div>
+        <div class="day-info">
+          <div class="day-date">2月28日（土）</div>
+          <div class="day-location">🇩🇪 Frankfurt 周辺｜ラインガウ ワインツアー</div>
+        </div>
+        <div class="day-badge badge-explore">🍷 Wine Tour</div>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="tl-time">09:10</div>
+          <div class="tl-title">📍 フランクフルト中央駅 23番ホーム入口付近で集合</div>
+          <div class="tl-desc">乗車券をここで購入。エバーバッハ修道院を見学する場合のスケジュールです。</div>
+          <div class="tl-tags">
+            <span class="tl-tag important">⚠ 見学しない場合は待ち合わせ30分遅れ（09:40）</span>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">09:23 発</div>
+          <div class="tl-title">🚂 フランクフルト中央駅 出発</div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">10:17</div>
+          <div class="tl-title">エルトヴィレ駅着 → タクシーでエバーバッハ修道院へ</div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">10:40〜11:30</div>
+          <div class="tl-title">🏛 エバーバッハ修道院 院内見学</div>
+          <div class="tl-desc">12世紀創建のシトー会修道院。ワインの歴史で有名な世界遺産候補地。</div>
+          <a class="map-link" href="https://maps.google.com/?q=Kloster+Eberbach+Eltville" target="_blank">📍 Google Maps</a>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">11:30〜12:15</div>
+          <div class="tl-title">🍷 ワインショップで試飲と購入</div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">12:15</div>
+          <div class="tl-title">タクシーにてリューデスハイムへ移動</div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">13:00〜14:50</div>
+          <div class="tl-title">🍽 リューデスハイム｜ランチ + プロースト試飲</div>
+          <div class="tl-desc">ライン川沿いのワインの街。プロースト（Prost）でワイン試飲もお楽しみに。</div>
+          <a class="map-link" href="https://maps.google.com/?q=Rüdesheim+am+Rhein" target="_blank">📍 Google Maps</a>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">14:53 / 15:23 発</div>
+          <div class="tl-title">🚂 リューデスハイム発 → フランクフルト中央駅へ</div>
+          <div class="tl-desc">到着: 16:04 / 16:34</div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">17:30〜20:00</div>
+          <div class="tl-title">📚 学術研究</div>
+          <div class="tl-desc">ドイツ滞在中における重要事項。現地でしか得られない知見の収集・記録を行う。所要時間約3時間。</div>
+          <div class="tl-tags">
+            <span class="tl-tag important">⚠ ドイツにおける重要事項</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 4 -->
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-number-block">
+          <span class="day-number">4</span>
+          <span class="day-label">Day</span>
+        </div>
+        <div class="day-info">
+          <div class="day-date">3月1日（日）</div>
+          <div class="day-location">🇩🇪 Frankfurt → München｜BMW Museum</div>
+        </div>
+        <div class="day-badge badge-train">🚄 Move + Museum</div>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="tl-time">〜 09:00</div>
+          <div class="tl-title">Trip Inn Minerva チェックアウト</div>
+          <div class="tl-desc">チェックアウトは〜11:00まで。荷物をまとめて中央駅へ。</div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">09:57 発 Gleis 23</div>
+          <div class="tl-title">🚄 Frankfurt(Main)Hbf → München Hbf</div>
+          <div class="ticket-block">
+            <strong>ICE 529</strong>｜2等車｜Wagen 23, Platz 62 / 64 / 68（窓側1・通路側2）<br>
+            Res. Nr: 808300003330｜到着 13:12 Gleis 23
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">13:12</div>
+          <div class="tl-title">ミュンヘン中央駅 到着 → ホテルへ</div>
+          <div class="tl-desc">到着後、自身でホテルまで移動。チェックイン 15:00〜</div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">14:45 頃 集合（15:00 ツアー開始）</div>
+          <div class="tl-title">🏎 BMW Museum Guided Tour</div>
+          <div class="tl-desc">英語ガイドツアー（15:00〜16:00）。<strong>開始15分前にFoyerへ集合必須。</strong></div>
+          <div class="ticket-block">
+            学割チケット × 3名｜Invoice: TIC-5006204<br>
+            住所: Am Olympiapark 2, 80809 München (BMW Museum Foyer)
+          </div>
+          <div class="note-block">
+            <strong>⚠ 遅刻厳禁。</strong> ガイドツアーの参加資格を失う可能性があります。
+          </div>
+          <a class="map-link" href="https://maps.google.com/?q=BMW+Museum+Munich" target="_blank">📍 Google Maps</a>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">16:00〜</div>
+          <div class="tl-title">BMW博物館 自由見学 / 夕食</div>
+        </div>
+      </div>
+
+      <div class="hotel-card">
+        <div class="hotel-icon">🏨</div>
+        <div>
+          <div class="hotel-name">Creatif Hotel Elephant（クリーティフ ホテル エレファント）</div>
+          <div class="hotel-detail">
+            Laemmerstrasse 6, 80335 München<br>
+            Tel: +49 89 5557 85｜Ref: 202-856○○0<br>
+            トリプル スタンダード｜朝食付｜3/1 – 3/4（3泊）<br>
+            チェックイン: 15:00〜6:00｜チェックアウト: 〜11:00
+          </div>
+          <a class="map-link" href="https://maps.google.com/?q=Creatif+Hotel+Elephant+Munich" target="_blank">📍 Google Maps</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 5 -->
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-number-block">
+          <span class="day-number">5</span>
+          <span class="day-label">Day</span>
+        </div>
+        <div class="day-info">
+          <div class="day-date">3月2日（月）</div>
+          <div class="day-location">🏰 Neuschwanstein｜ノイシュバンシュタイン城</div>
+        </div>
+        <div class="day-badge badge-explore">🏰 Castle</div>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="tl-time">08:15</div>
+          <div class="tl-title">ミュンヘン中央駅 出発</div>
+          <div class="tl-desc">電車でFüssenへ向かいます。</div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">11:35 頃</div>
+          <div class="tl-title">ノイシュバンシュタイン城エリア到着</div>
+          <div class="tl-desc">バス・馬車・徒歩でチケットセンターへ移動。</div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">09:00〜16:30</div>
+          <div class="tl-title">🏰 バイエルン国王博物館（Museum of the Bavarian Kings）</div>
+          <div class="ticket-block">
+            Tournummer: <strong>001</strong>｜開館: 09:00〜16:30
+          </div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">12:00 入場</div>
+          <div class="tl-title">🏰 ノイシュバンシュタイン城 ガイドツアー</div>
+          <div class="tl-desc">城の入場口（内庭）に<strong>15分前（11:45）までに集合</strong>してください。</div>
+          <div class="ticket-block">
+            <strong>Prince-Ticket</strong>（城 + 国王博物館セット）× 3名｜€31.50 + 手数料<br>
+            Tournummer: <strong>448</strong>｜英語（UK）ガイド｜日付厳守・返金不可
+          </div>
+          <div class="note-block">
+            <strong>⚠ 絶対厳守：</strong> 指定時刻を過ぎるとチケット無効・返金不可。
+          </div>
+          <a class="map-link" href="https://maps.google.com/?q=Neuschwanstein+Castle" target="_blank">📍 Google Maps</a>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">13:00〜15:20</div>
+          <div class="tl-title">周辺散策（おすすめルート）</div>
+          <div class="tl-desc">
+            ① <strong>マリエン橋</strong>（城から徒歩15〜20分・絶景ポイント）<br>
+            ② <strong>ホーエンシュヴァンガウ村</strong>散策・プレッツェル＋ホットチョコ（30〜40分）<br>
+            ③ <strong>アルプ湖（Alpsee）</strong>湖畔散歩（10〜20分で満足度高）
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">15:40</div>
+          <div class="tl-title">帰路バス乗車（Bus 76）</div>
+          <div class="tl-desc">乗車場所: <strong>Hohenschwangau Neuschwanstein Castles バス停</strong><br>「Füssen Bahnhof」表示のバスに乗車。午後は混雑するため<strong>10〜15分前到着推奨</strong>。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 6 -->
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-number-block">
+          <span class="day-number">6</span>
+          <span class="day-label">Day</span>
+        </div>
+        <div class="day-info">
+          <div class="day-date">3月3日（火）</div>
+          <div class="day-location">⛰ Zugspitze + Alte Pinakothek</div>
+        </div>
+        <div class="day-badge badge-explore">⛰ Mountain</div>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="tl-time">06:45〜08:00</div>
+          <div class="tl-title">ホテル朝食 → ミュンヘン中央駅へ移動</div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">08:28 発</div>
+          <div class="tl-title">🚂 München → Garmisch-Partenkirchen（RB6 / RB60）</div>
+          <div class="tl-desc">乗換なし・所要約1時間27分。Deutschlandticket使用可。</div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">09:55 着</div>
+          <div class="tl-title">ガルミッシュ＝パルテンキルヘン駅 到着</div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">10:05〜10:50</div>
+          <div class="tl-title">🏘 旧市街 ショート散策</div>
+          <div class="tl-desc">Ludwigstraße（バイエルン伝統壁画・Lüftlmalerei）→ Marienplatz（中心広場）</div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">10:55〜11:45</div>
+          <div class="tl-title">🍺 ランチ｜Gasthaus Bräuwastl</div>
+          <div class="tl-desc">おすすめ: Schweinebraten（ローストポーク）・Käsespätzle（チーズ麺）/ €12〜20</div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">12:20〜12:40</div>
+          <div class="tl-title">🚌 駅前 → Eibsee バス移動（€3〜5）</div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">12:50〜14:10（約80分）</div>
+          <div class="tl-title">⛰ ツークシュピッツェ（2,962m）</div>
+          <div class="tl-desc">
+            12:50 ロープウェイ上り<br>
+            13:00 頂上到着 → 展望台パノラマ<br>
+            13:20 独墺国境十字架<br>
+            13:35〜13:55 頂上カフェ休憩<br>
+            14:00 下山 → 14:10 Eibsee着
+          </div>
+          <a class="map-link" href="https://maps.google.com/?q=Zugspitze+Germany" target="_blank">📍 Google Maps</a>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">14:10〜14:35</div>
+          <div class="tl-title">🏔 Eibsee 湖畔散歩</div>
+          <div class="tl-desc">雪山のリフレクション写真スポット。ハイキング不要。</div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">15:32〜 発</div>
+          <div class="tl-title">🚂 ガルミッシュ → ミュンヘン（RB/RE直通）</div>
+          <div class="tl-desc">約17:05着（前倒しで美術館安全圏）</div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">18:00〜20:00</div>
+          <div class="tl-title">🎨 アルテ・ピナコテーク（Alte Pinakothek）</div>
+          <div class="tl-desc">ルーベンス・デューラーなど欧州絵画の殿堂。火曜は20:00まで延長開館。最終入場19:30。</div>
+          <div class="tl-tags">
+            <span class="tl-tag">U4/U5 → Odeonsplatz 下車 → 徒歩10分</span>
+          </div>
+          <a class="map-link" href="https://maps.google.com/?q=Alte+Pinakothek+Munich" target="_blank">📍 Google Maps</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 7 -->
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-number-block">
+          <span class="day-number">7</span>
+          <span class="day-label">Day</span>
+        </div>
+        <div class="day-info">
+          <div class="day-date">3月4日（水）</div>
+          <div class="day-location">🇩🇪 München → 🇶🇦 Doha → ✈ 帰路</div>
+        </div>
+        <div class="day-badge badge-departure">✈ Departure</div>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="tl-time">〜 11:00</div>
+          <div class="tl-title">Creatif Hotel Elephant チェックアウト</div>
+          <div class="tl-desc">空港まで余裕を持って移動。出発2〜3時間前に空港到着を推奨。</div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">08:40 発</div>
+          <div class="tl-title">✈ MUC → DOH｜Qatar Airways QR060</div>
+          <div class="flight-card">
+            <div class="flight-route">
+              <div class="flight-code">MUC</div>
+              <div class="flight-arrow">QR 060</div>
+              <div class="flight-code">DOH</div>
+            </div>
+            <div class="flight-detail">
+              <strong>ミュンヘン国際空港 T1</strong> 08:40 発 → <strong>ドーハ ハマド国際空港</strong> 16:10 着
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-time">16:10 着 / 20:05 発</div>
+          <div class="tl-title">ドーハ乗り継ぎ</div>
+          <div class="tl-desc">約4時間の乗り継ぎ時間。自身で搭乗手続きを。</div>
+        </div>
+        <div class="timeline-item highlight">
+          <div class="tl-time">20:05 発</div>
+          <div class="tl-title">✈ DOH → NRT｜Qatar Airways QR808</div>
+          <div class="flight-card">
+            <div class="flight-route">
+              <div class="flight-code">DOH</div>
+              <div class="flight-arrow">QR 808</div>
+              <div class="flight-code">NRT</div>
+            </div>
+            <div class="flight-detail">
+              <strong>ドーハ ハマド国際空港</strong> 20:05 発 → <strong>東京 成田国際空港 T2</strong> 翌11:55 着
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 8 -->
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-number-block">
+          <span class="day-number">8</span>
+          <span class="day-label">Day</span>
+        </div>
+        <div class="day-info">
+          <div class="day-date">3月5日（木）</div>
+          <div class="day-location">🇯🇵 Tokyo Narita 帰国</div>
+        </div>
+        <div class="day-badge badge-departure">🏠 Return</div>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item highlight">
+          <div class="tl-time">11:55</div>
+          <div class="tl-title">成田国際空港 第2ターミナル 到着</div>
+          <div class="tl-desc">お気をつけてお帰りください。Gute Heimreise! 🇩🇪</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== EMERGENCY SECTION ===== -->
+<div class="emergency-section section">
+  <div class="section-inner">
+    <div class="overview-header">
+      <span class="section-tag">Emergency & Booking Info</span>
+      <h2 class="section-title">緊急連絡・予約番号一覧</h2>
+    </div>
+
+    <div class="emergency-grid">
+      <div class="emergency-card">
+        <div class="emergency-card-title">✈ フライト予約番号</div>
+        <div class="emergency-card-main">8XBPGA</div>
+        <div class="emergency-card-detail">Qatar Airways<br>E-ticket: 1572133099743</div>
+      </div>
+      <div class="emergency-card">
+        <div class="emergency-card-title">🏨 フランクフルト ホテル</div>
+        <div class="emergency-card-main">202-8568250</div>
+        <div class="emergency-card-detail">Trip Inn Minerva<br>+49 69 2561 7600</div>
+      </div>
+      <div class="emergency-card">
+        <div class="emergency-card-title">🏨 ミュンヘン ホテル</div>
+        <div class="emergency-card-main">202-856○○0</div>
+        <div class="emergency-card-detail">Creatif Hotel Elephant<br>+49 89 5557 85</div>
+      </div>
+      <div class="emergency-card">
+        <div class="emergency-card-title">🚄 ICE フランクフルト→ケルン</div>
+        <div class="emergency-card-main">Res. 808260060382</div>
+        <div class="emergency-card-detail">ICE 724 | 2/27 12:07発<br>Wg.23 Pl.26/28/37</div>
+      </div>
+      <div class="emergency-card">
+        <div class="emergency-card-title">🚄 ICE ケルン→フランクフルト</div>
+        <div class="emergency-card-main">Res. 808560101355</div>
+        <div class="emergency-card-detail">ICE 19 | 2/27 20:18発<br>Wg.25 Pl.45/46/51</div>
+      </div>
+      <div class="emergency-card">
+        <div class="emergency-card-title">🚄 ICE フランクフルト→ミュンヘン</div>
+        <div class="emergency-card-main">Res. 808300003330</div>
+        <div class="emergency-card-detail">ICE 529 | 3/1 09:57発<br>Wg.23 Pl.62/64/68</div>
+      </div>
+      <div class="emergency-card">
+        <div class="emergency-card-title">🏰 ノイシュバンシュタイン城</div>
+        <div class="emergency-card-main">Serie: 399/23/5963</div>
+        <div class="emergency-card-detail">3/2 12:00 Tour No.448<br>博物館 Tour No.001</div>
+      </div>
+      <div class="emergency-card">
+        <div class="emergency-card-title">🏎 BMW Museum</div>
+        <div class="emergency-card-main">TIC-5006204</div>
+        <div class="emergency-card-detail">3/1 15:00〜16:00<br>3名 | 英語ガイド</div>
+      </div>
+      <div class="emergency-card">
+        <div class="emergency-card-title">📞 旅行会社 緊急連絡</div>
+        <div class="emergency-card-main">+81-3456-30842</div>
+        <div class="emergency-card-detail">24時間日本語対応<br>File No: 25-0043291</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<div class="footer">
+  <div class="footer-title">Gute Reise! ✦</div>
+  <div class="footer-detail">
+    REIJIRO TAKAYAMA · 3 Persons · 2026.02.26 — 03.05<br>
+    Frankfurt · Köln · München · Neuschwanstein · Zugspitze<br>
+    Qatar Airways · Deutsche Bahn · Bayerische Schlösserverwaltung
+  </div>
+</div>
+
+</body>
+</html>
