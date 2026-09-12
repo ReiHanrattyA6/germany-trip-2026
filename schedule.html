@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スケジュール管理 | ドイツ旅行 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Noto+Serif+JP:wght@300;400;700&family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B1929;
+    --navy-mid: #14273D;
+    --navy-light: #1E3A55;
+    --gold: #C9952A;
+    --gold-light: #E8C06A;
+    --cream: #F7F2E9;
+    --cream-dark: #EDE5D5;
+    --white: #FEFCF8;
+    --text: #2A1F14;
+    --text-light: #6B5B45;
+    --accent-red: #C0392B;
+    --accent-teal: #2A7F7F;
+    --today: #2A7F7F;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--navy);
+    color: var(--cream);
+    font-family: 'Josefin Sans', 'Noto Serif JP', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  a { color: var(--gold-light); }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 32px 20px 0;
+  }
+
+  header.top {
+    text-align: center;
+    padding: 24px 0 32px;
+    border-bottom: 1px solid rgba(201,149,42,0.25);
+    margin-bottom: 28px;
+  }
+
+  .top-tag {
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h1.top-title {
+    font-family: 'Playfair Display', 'Noto Serif JP', serif;
+    font-size: clamp(28px, 6vw, 44px);
+    font-weight: 900;
+    color: var(--cream);
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--gold-light);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(232,192,106,0.4);
+  }
+
+  .today-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: linear-gradient(135deg, var(--navy-light), var(--navy-mid));
+    border: 1px solid rgba(201,149,42,0.35);
+    border-radius: 14px;
+    padding: 18px 24px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    text-align: center;
+  }
+
+  .today-banner .label {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .today-banner .value {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--white);
+  }
+
+  .today-banner .note {
+    font-size: 12px;
+    color: var(--gold-light);
+    opacity: 0.9;
+  }
+
+  .card {
+    background: var(--navy-mid);
+    border: 1px solid rgba(201,149,42,0.2);
+    border-radius: 16px;
+    padding: 22px 22px 26px;
+    margin-bottom: 26px;
+  }
+
+  .card h2 {
+    font-family: 'Playfair Display', 'Noto Serif JP', serif;
+    font-size: 19px;
+    color: var(--gold-light);
+    margin-bottom: 6px;
+  }
+
+  .card .hint {
+    font-size: 12.5px;
+    color: rgba(247,242,233,0.55);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  /* import section */
+  .import-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  input[type="file"] {
+    color: var(--cream);
+    font-size: 13px;
+  }
+
+  input[type="file"]::file-selector-button {
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-right: 12px;
+  }
+
+  .btn {
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: 'Josefin Sans', sans-serif;
+  }
+  .btn:hover { background: var(--gold-light); }
+
+  .btn.ghost {
+    background: transparent;
+    border: 1px solid rgba(201,149,42,0.5);
+    color: var(--gold-light);
+  }
+  .btn.ghost:hover { background: rgba(201,149,42,0.12); }
+
+  .btn.small {
+    padding: 5px 12px;
+    font-size: 12px;
+  }
+
+  .btn.danger {
+    background: transparent;
+    border: 1px solid rgba(192,57,43,0.55);
+    color: #E68A80;
+  }
+  .btn.danger:hover { background: rgba(192,57,43,0.15); }
+
+  #import-status {
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: var(--accent-teal);
+    min-height: 18px;
+  }
+  #import-status.error { color: #E68A80; }
+
+  /* add-date row */
+  .add-date-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  input[type="date"], input[type="time"], input[type="number"], input[type="text"], textarea {
+    background: rgba(247,242,233,0.06);
+    border: 1px solid rgba(201,149,42,0.3);
+    color: var(--cream);
+    border-radius: 7px;
+    padding: 7px 9px;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 13.5px;
+  }
+  input:focus, textarea:focus { outline: none; border-color: var(--gold-light); }
+
+  /* day cards */
+  .day-card {
+    border: 1px solid rgba(201,149,42,0.2);
+    border-radius: 14px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .day-card.today {
+    border-color: var(--today);
+    box-shadow: 0 0 0 1px var(--today);
+  }
+
+  .day-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--navy-light);
+    padding: 12px 18px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .day-head-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .day-date-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    color: var(--white);
+  }
+
+  .today-pill {
+    background: var(--today);
+    color: var(--white);
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    text-transform: uppercase;
+  }
+
+  .day-total {
+    font-size: 12.5px;
+    color: var(--gold-light);
+  }
+
+  table.entries {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  table.entries th {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-align: left;
+    padding: 10px 10px 6px;
+    border-bottom: 1px solid rgba(201,149,42,0.2);
+  }
+
+  table.entries td {
+    padding: 6px 10px;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(247,242,233,0.06);
+  }
+
+  table.entries td.col-time { width: 90px; }
+  table.entries td.col-min { width: 90px; }
+  table.entries td.col-del { width: 40px; text-align: center; }
+
+  table.entries input[type="time"] { width: 84px; }
+  table.entries input[type="number"] { width: 66px; }
+  table.entries input.content-input { width: 100%; }
+  table.entries textarea.detail-input {
+    width: 100%;
+    resize: vertical;
+    min-height: 30px;
+  }
+
+  .row-del-btn {
+    background: none;
+    border: none;
+    color: rgba(232,138,128,0.75);
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .row-del-btn:hover { color: #E68A80; }
+
+  .day-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 18px 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .empty-hint {
+    padding: 18px;
+    font-size: 13px;
+    color: rgba(247,242,233,0.5);
+    text-align: center;
+  }
+
+  /* totals table */
+  table.totals {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  table.totals th {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(201,149,42,0.25);
+  }
+  table.totals td {
+    padding: 9px 10px;
+    border-bottom: 1px solid rgba(247,242,233,0.06);
+    font-size: 14px;
+  }
+  table.totals td.num, table.totals th.num { text-align: right; }
+  table.totals tr:last-child td { font-weight: 700; color: var(--gold-light); border-bottom: none; }
+
+  .no-data {
+    color: rgba(247,242,233,0.45);
+    font-size: 13px;
+    padding: 10px 2px;
+  }
+
+  footer.page-footer {
+    text-align: center;
+    font-size: 11px;
+    color: rgba(247,242,233,0.35);
+    letter-spacing: 2px;
+    margin-top: 40px;
+  }
+
+  @media (max-width: 600px) {
+    table.entries td.col-min { width: 66px; }
+    table.entries input[type="number"] { width: 50px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="top-tag">Germany Trip 2026</div>
+    <h1 class="top-title">スケジュール管理</h1>
+    <a class="back-link" href="index.html">← 旅のしおりへ戻る</a>
+  </header>
+
+  <div class="today-banner">
+    <div>
+      <div class="label">Today</div>
+      <div class="value" id="today-value">-</div>
+    </div>
+    <div class="note" id="today-note"></div>
+  </div>
+
+  <div class="card">
+    <h2>ICS ファイルをインポート</h2>
+    <div class="hint">カレンダーアプリ等からエクスポートした .ics ファイルを読み込みます。既存の予定は日付ごとに追加され、上書きはされません。時刻はファイルに記載された値をそのまま使用します（タイムゾーン変換は行いません）。</div>
+    <div class="import-row">
+      <input type="file" id="ics-file" accept=".ics,text/calendar" multiple>
+      <button class="btn ghost" id="clear-all-btn">すべて削除</button>
+    </div>
+    <div id="import-status"></div>
+  </div>
+
+  <div class="card">
+    <h2>日付を追加</h2>
+    <div class="hint">ICS に含まれていない日を手動で追加できます。</div>
+    <div class="add-date-row">
+      <input type="date" id="new-date-input">
+      <button class="btn" id="add-date-btn">日付を追加</button>
+    </div>
+  </div>
+
+  <div id="days-container"></div>
+
+  <div class="card">
+    <h2>内容ごとの合計時間</h2>
+    <div class="hint">「内容」の文言が一致する予定をまとめて、合計時間を算出します（大文字小文字・前後の空白は区別しません）。</div>
+    <div id="totals-container"></div>
+  </div>
+
+  <footer class="page-footer">GERMANY TRIP 2026 ✦ SCHEDULE</footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'germanyTrip2026Schedule.v1';
+  /** @type {Object<string, Array<{id:string,time:string,minutes:number|null,content:string,details:string}>>} */
+  var schedule = {};
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      schedule = raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      schedule = {};
+    }
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule));
+    } catch (e) { /* storage unavailable — edits stay in-memory only for this view */ }
+  }
+
+  function uid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+  }
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+
+  function todayKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+
+  var WEEKDAYS_JA = ['日', '月', '火', '水', '木', '金', '土'];
+
+  function formatDateLabel(dateKey) {
+    var parts = dateKey.split('-').map(Number);
+    var d = new Date(parts[0], parts[1] - 1, parts[2]);
+    return parts[0] + '年' + parts[1] + '月' + parts[2] + '日（' + WEEKDAYS_JA[d.getDay()] + '）';
+  }
+
+  function formatMinutes(total) {
+    if (!total || total <= 0) return '0分';
+    var h = Math.floor(total / 60);
+    var m = total % 60;
+    if (h === 0) return m + '分';
+    if (m === 0) return h + '時間';
+    return h + '時間' + m + '分';
+  }
+
+  // ---------- ICS parsing ----------
+
+  function unfoldLines(text) {
+    var rawLines = text.split(/\r\n|\n|\r/);
+    var lines = [];
+    for (var i = 0; i < rawLines.length; i++) {
+      var line = rawLines[i];
+      if ((line.charAt(0) === ' ' || line.charAt(0) === '\t') && lines.length > 0) {
+        lines[lines.length - 1] += line.slice(1);
+      } else {
+        lines.push(line);
+      }
+    }
+    return lines;
+  }
+
+  function unescapeText(s) {
+    return s
+      .replace(/\\n/gi, '\n')
+      .replace(/\\,/g, ',')
+      .replace(/\\;/g, ';')
+      .replace(/\\\\/g, '\\');
+  }
+
+  function parseLine(line) {
+    var colonIdx = line.indexOf(':');
+    if (colonIdx === -1) return null;
+    var left = line.slice(0, colonIdx);
+    var value = line.slice(colonIdx + 1);
+    var segs = left.split(';');
+    var name = segs[0].toUpperCase();
+    var params = {};
+    for (var i = 1; i < segs.length; i++) {
+      var eq = segs[i].indexOf('=');
+      if (eq !== -1) params[segs[i].slice(0, eq).toUpperCase()] = segs[i].slice(eq + 1);
+    }
+    return { name: name, params: params, value: value };
+  }
+
+  function parseDateValue(value) {
+    // YYYYMMDD or YYYYMMDDTHHMMSS(Z)
+    var m = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2}))?/.exec(value);
+    if (!m) return null;
+    var allDay = !m[4];
+    return {
+      year: +m[1], month: +m[2], day: +m[3],
+      hour: m[4] ? +m[4] : 0, minute: m[5] ? +m[5] : 0, second: m[6] ? +m[6] : 0,
+      allDay: allDay
+    };
+  }
+
+  function parseICS(text) {
+    var lines = unfoldLines(text);
+    var events = [];
+    var cur = null;
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      if (line === 'BEGIN:VEVENT') {
+        cur = { summary: '', description: '', location: '', dtstart: null, dtend: null };
+      } else if (line === 'END:VEVENT') {
+        if (cur) events.push(cur);
+        cur = null;
+      } else if (cur) {
+        var p = parseLine(line);
+        if (!p) continue;
+        if (p.name === 'SUMMARY') cur.summary = unescapeText(p.value);
+        else if (p.name === 'DESCRIPTION') cur.description = unescapeText(p.value);
+        else if (p.name === 'LOCATION') cur.location = unescapeText(p.value);
+        else if (p.name === 'DTSTART') cur.dtstart = parseDateValue(p.value);
+        else if (p.name === 'DTEND') cur.dtend = parseDateValue(p.value);
+      }
+    }
+
+    var results = [];
+    events.forEach(function (ev) {
+      if (!ev.dtstart) return;
+      var s = ev.dtstart;
+      var dateKey = s.year + '-' + pad2(s.month) + '-' + pad2(s.day);
+      var time = s.allDay ? '' : pad2(s.hour) + ':' + pad2(s.minute);
+      var minutes = null;
+      if (ev.dtend && !s.allDay) {
+        var startMs = new Date(s.year, s.month - 1, s.day, s.hour, s.minute, s.second).getTime();
+        var e = ev.dtend;
+        var endMs = new Date(e.year, e.month - 1, e.day, e.hour, e.minute, e.second).getTime();
+        var diff = Math.round((endMs - startMs) / 60000);
+        if (diff > 0) minutes = diff;
+      }
+      var detailsParts = [];
+      if (ev.description) detailsParts.push(ev.description);
+      if (ev.location) detailsParts.push('場所: ' + ev.location);
+      results.push({
+        id: uid(),
+        date: dateKey,
+        time: time,
+        minutes: minutes,
+        content: ev.summary || '(無題の予定)',
+        details: detailsParts.join('\n')
+      });
+    });
+    return results;
+  }
+
+  // ---------- state helpers ----------
+
+  function ensureDate(dateKey) {
+    if (!schedule[dateKey]) schedule[dateKey] = [];
+  }
+
+  function addEntries(entries) {
+    entries.forEach(function (e) {
+      ensureDate(e.date);
+      schedule[e.date].push({
+        id: e.id, time: e.time, minutes: e.minutes,
+        content: e.content, details: e.details
+      });
+    });
+  }
+
+  // ---------- rendering ----------
+
+  var daysContainer = document.getElementById('days-container');
+  var totalsContainer = document.getElementById('totals-container');
+
+  function renderToday() {
+    var d = new Date();
+    document.getElementById('today-value').textContent =
+      d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日（' + WEEKDAYS_JA[d.getDay()] + '）';
+    var tKey = todayKey();
+    var note = document.getElementById('today-note');
+    if (schedule[tKey] && schedule[tKey].length) {
+      note.textContent = '本日の予定 ' + schedule[tKey].length + ' 件';
+    } else {
+      note.textContent = '本日の予定はまだ登録されていません';
+    }
+  }
+
+  function dayTotalMinutes(dateKey) {
+    var list = schedule[dateKey] || [];
+    return list.reduce(function (sum, e) { return sum + (e.minutes || 0); }, 0);
+  }
+
+  function renderDays() {
+    var keys = Object.keys(schedule).sort();
+    daysContainer.innerHTML = '';
+    if (keys.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'card';
+      empty.innerHTML = '<div class="empty-hint">まだ予定がありません。ICS をインポートするか、上の「日付を追加」から開始してください。</div>';
+      daysContainer.appendChild(empty);
+      return;
+    }
+    var tKey = todayKey();
+    keys.forEach(function (dateKey) {
+      var card = document.createElement('div');
+      card.className = 'day-card' + (dateKey === tKey ? ' today' : '');
+
+      var head = document.createElement('div');
+      head.className = 'day-head';
+      var headLeft = document.createElement('div');
+      headLeft.className = 'day-head-left';
+      var dateLabel = document.createElement('div');
+      dateLabel.className = 'day-date-label';
+      dateLabel.textContent = formatDateLabel(dateKey);
+      headLeft.appendChild(dateLabel);
+      if (dateKey === tKey) {
+        var pill = document.createElement('span');
+        pill.className = 'today-pill';
+        pill.textContent = 'Today';
+        headLeft.appendChild(pill);
+      }
+      head.appendChild(headLeft);
+      var delDateBtn = document.createElement('button');
+      delDateBtn.className = 'btn danger small';
+      delDateBtn.textContent = 'この日を削除';
+      delDateBtn.addEventListener('click', function () {
+        if (confirm(formatDateLabel(dateKey) + ' の予定をすべて削除しますか？')) {
+          delete schedule[dateKey];
+          save();
+          renderAll();
+        }
+      });
+      head.appendChild(delDateBtn);
+      card.appendChild(head);
+
+      var list = schedule[dateKey];
+      if (list.length === 0) {
+        var emptyRow = document.createElement('div');
+        emptyRow.className = 'empty-hint';
+        emptyRow.textContent = '予定がありません。';
+        card.appendChild(emptyRow);
+      } else {
+        var table = document.createElement('table');
+        table.className = 'entries';
+        table.innerHTML =
+          '<thead><tr>' +
+          '<th class="col-time">時刻</th>' +
+          '<th>内容</th>' +
+          '<th class="col-min">分</th>' +
+          '<th>詳細</th>' +
+          '<th class="col-del"></th>' +
+          '</tr></thead>';
+        var tbody = document.createElement('tbody');
+
+        var sorted = list.slice().sort(function (a, b) {
+          if (!a.time && !b.time) return 0;
+          if (!a.time) return 1;
+          if (!b.time) return -1;
+          return a.time < b.time ? -1 : (a.time > b.time ? 1 : 0);
+        });
+
+        sorted.forEach(function (entry) {
+          var tr = document.createElement('tr');
+
+          var tdTime = document.createElement('td');
+          tdTime.className = 'col-time';
+          var timeInput = document.createElement('input');
+          timeInput.type = 'time';
+          timeInput.value = entry.time || '';
+          timeInput.addEventListener('change', function () {
+            entry.time = timeInput.value;
+            save();
+            renderDays();
+          });
+          tdTime.appendChild(timeInput);
+          tr.appendChild(tdTime);
+
+          var tdContent = document.createElement('td');
+          var contentInput = document.createElement('input');
+          contentInput.type = 'text';
+          contentInput.className = 'content-input';
+          contentInput.value = entry.content || '';
+          contentInput.placeholder = '内容';
+          contentInput.addEventListener('input', function () {
+            entry.content = contentInput.value;
+            save();
+          });
+          contentInput.addEventListener('blur', function () { renderTotals(); });
+          tdContent.appendChild(contentInput);
+          tr.appendChild(tdContent);
+
+          var tdMin = document.createElement('td');
+          tdMin.className = 'col-min';
+          var minInput = document.createElement('input');
+          minInput.type = 'number';
+          minInput.min = '0';
+          minInput.step = '5';
+          minInput.value = entry.minutes === null || entry.minutes === undefined ? '' : entry.minutes;
+          minInput.addEventListener('input', function () {
+            var v = minInput.value === '' ? null : Math.max(0, parseInt(minInput.value, 10) || 0);
+            entry.minutes = v;
+            save();
+            renderDayTotalOnly(dateKey);
+            renderTotals();
+          });
+          tdMin.appendChild(minInput);
+          tr.appendChild(tdMin);
+
+          var tdDetail = document.createElement('td');
+          var detailInput = document.createElement('textarea');
+          detailInput.className = 'detail-input';
+          detailInput.rows = 1;
+          detailInput.value = entry.details || '';
+          detailInput.placeholder = '詳細';
+          detailInput.addEventListener('input', function () {
+            entry.details = detailInput.value;
+            save();
+          });
+          tdDetail.appendChild(detailInput);
+          tr.appendChild(tdDetail);
+
+          var tdDel = document.createElement('td');
+          tdDel.className = 'col-del';
+          var delBtn = document.createElement('button');
+          delBtn.className = 'row-del-btn';
+          delBtn.title = '削除';
+          delBtn.textContent = '✕';
+          delBtn.addEventListener('click', function () {
+            var idx = schedule[dateKey].findIndex(function (e) { return e.id === entry.id; });
+            if (idx !== -1) schedule[dateKey].splice(idx, 1);
+            save();
+            renderDays();
+            renderTotals();
+          });
+          tdDel.appendChild(delBtn);
+          tr.appendChild(tdDel);
+
+          tbody.appendChild(tr);
+        });
+
+        table.appendChild(tbody);
+        card.appendChild(table);
+      }
+
+      var footerRow = document.createElement('div');
+      footerRow.className = 'day-footer';
+      var addRowBtn = document.createElement('button');
+      addRowBtn.className = 'btn ghost small';
+      addRowBtn.textContent = '+ 予定を追加';
+      addRowBtn.addEventListener('click', function () {
+        schedule[dateKey].push({ id: uid(), time: '', minutes: null, content: '', details: '' });
+        save();
+        renderDays();
+      });
+      footerRow.appendChild(addRowBtn);
+      var total = document.createElement('div');
+      total.className = 'day-total';
+      total.id = 'day-total-' + dateKey;
+      total.textContent = 'この日の合計: ' + formatMinutes(dayTotalMinutes(dateKey));
+      footerRow.appendChild(total);
+      card.appendChild(footerRow);
+
+      daysContainer.appendChild(card);
+    });
+  }
+
+  function renderDayTotalOnly(dateKey) {
+    var el = document.getElementById('day-total-' + dateKey);
+    if (el) el.textContent = 'この日の合計: ' + formatMinutes(dayTotalMinutes(dateKey));
+  }
+
+  function renderTotals() {
+    var groups = {};
+    Object.keys(schedule).forEach(function (dateKey) {
+      schedule[dateKey].forEach(function (entry) {
+        var key = (entry.content || '').trim().toLowerCase();
+        if (!key) key = '(内容未入力)';
+        if (!groups[key]) groups[key] = { label: (entry.content || '').trim() || '(内容未入力)', minutes: 0, count: 0 };
+        groups[key].minutes += (entry.minutes || 0);
+        groups[key].count += 1;
+      });
+    });
+    var rows = Object.keys(groups).map(function (k) { return groups[k]; });
+    rows.sort(function (a, b) { return b.minutes - a.minutes; });
+
+    totalsContainer.innerHTML = '';
+    if (rows.length === 0) {
+      var none = document.createElement('div');
+      none.className = 'no-data';
+      none.textContent = 'まだ予定が登録されていません。';
+      totalsContainer.appendChild(none);
+      return;
+    }
+    var table = document.createElement('table');
+    table.className = 'totals';
+    var grandTotal = rows.reduce(function (s, r) { return s + r.minutes; }, 0);
+    var thead = '<thead><tr><th>内容</th><th class="num">件数</th><th class="num">合計時間</th></tr></thead>';
+    var tbody = '<tbody>' + rows.map(function (r) {
+      return '<tr><td>' + escapeHtml(r.label) + '</td><td class="num">' + r.count + '</td><td class="num">' + formatMinutes(r.minutes) + '</td></tr>';
+    }).join('') + '<tr><td>合計</td><td class="num"></td><td class="num">' + formatMinutes(grandTotal) + '</td></tr></tbody>';
+    table.innerHTML = thead + tbody;
+    totalsContainer.appendChild(table);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function renderAll() {
+    renderToday();
+    renderDays();
+    renderTotals();
+  }
+
+  // ---------- events ----------
+
+  document.getElementById('ics-file').addEventListener('change', function (ev) {
+    var files = Array.prototype.slice.call(ev.target.files || []);
+    if (!files.length) return;
+    var statusEl = document.getElementById('import-status');
+    statusEl.className = '';
+    var pending = files.length;
+    var totalImported = 0;
+    var hadError = false;
+    files.forEach(function (file) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          var entries = parseICS(String(reader.result));
+          addEntries(entries);
+          totalImported += entries.length;
+        } catch (e) {
+          hadError = true;
+        }
+        pending--;
+        if (pending === 0) {
+          save();
+          renderAll();
+          statusEl.className = hadError ? 'error' : '';
+          statusEl.textContent = hadError
+            ? (totalImported + ' 件を読み込みましたが、一部のファイルは解析できませんでした。')
+            : totalImported + ' 件の予定を読み込みました。';
+        }
+      };
+      reader.onerror = function () {
+        hadError = true;
+        pending--;
+        if (pending === 0) {
+          save();
+          renderAll();
+          statusEl.className = 'error';
+          statusEl.textContent = 'ファイルの読み込みに失敗しました。';
+        }
+      };
+      reader.readAsText(file);
+    });
+    ev.target.value = '';
+  });
+
+  document.getElementById('clear-all-btn').addEventListener('click', function () {
+    if (confirm('すべてのスケジュールデータを削除します。よろしいですか？（この操作は元に戻せません）')) {
+      schedule = {};
+      save();
+      renderAll();
+    }
+  });
+
+  document.getElementById('add-date-btn').addEventListener('click', function () {
+    var input = document.getElementById('new-date-input');
+    if (!input.value) return;
+    ensureDate(input.value);
+    save();
+    renderAll();
+  });
+
+  load();
+  renderAll();
+})();
+</script>
+
+</body>
+</html>
