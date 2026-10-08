@@ -396,6 +396,17 @@
   </div>
 
   <div class="card">
+    <h2>他の端末と同期する</h2>
+    <div class="hint">このページのデータはブラウザごとの保存のため、他の端末（社用PCなど）とは自動では共有されません。「書き出し」でJSONファイルをダウンロードし、メールやクラウドストレージ経由で他の端末に渡して「読み込み」すれば、そちらのデータがこの内容に置き換わります。</div>
+    <div class="import-row">
+      <button class="btn ghost" id="export-json-btn">書き出し（ダウンロード）</button>
+      <label class="btn ghost" for="import-json-file" style="cursor:pointer;">読み込み（ファイルを選択）</label>
+      <input type="file" id="import-json-file" accept=".json,application/json" style="display:none;">
+    </div>
+    <div id="sync-status"></div>
+  </div>
+
+  <div class="card">
     <h2>日付を追加</h2>
     <div class="hint">ICS に含まれていない日を手動で追加できます。</div>
     <div class="add-date-row">
@@ -891,6 +902,89 @@
     ensureDate(input.value);
     save();
     renderAll();
+  });
+
+  function sanitizeImportedSchedule(raw) {
+    var src = (raw && typeof raw === 'object' && raw.schedule && typeof raw.schedule === 'object')
+      ? raw.schedule
+      : raw;
+    if (!src || typeof src !== 'object') return null;
+    var result = {};
+    Object.keys(src).forEach(function (dateKey) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return;
+      var list = src[dateKey];
+      if (!Array.isArray(list)) return;
+      result[dateKey] = list.map(function (e) {
+        return {
+          id: (e && typeof e.id === 'string') ? e.id : uid(),
+          time: (e && typeof e.time === 'string') ? e.time : '',
+          minutes: (e && typeof e.minutes === 'number' && e.minutes >= 0) ? e.minutes : null,
+          content: (e && typeof e.content === 'string') ? e.content : '',
+          details: (e && typeof e.details === 'string') ? e.details : ''
+        };
+      });
+    });
+    return result;
+  }
+
+  document.getElementById('export-json-btn').addEventListener('click', function () {
+    var payload = {
+      app: 'germany-trip-2026-schedule',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      schedule: schedule
+    };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var d = new Date();
+    a.href = url;
+    a.download = 'germany-trip-2026-schedule_' + d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    var statusEl = document.getElementById('sync-status');
+    statusEl.className = '';
+    statusEl.textContent = 'JSONファイルを書き出しました。';
+  });
+
+  document.getElementById('import-json-file').addEventListener('change', function (ev) {
+    var file = (ev.target.files || [])[0];
+    var statusEl = document.getElementById('sync-status');
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var parsed, sanitized;
+      try {
+        parsed = JSON.parse(String(reader.result));
+        sanitized = sanitizeImportedSchedule(parsed);
+      } catch (e) {
+        sanitized = null;
+      }
+      if (!sanitized) {
+        statusEl.className = 'error';
+        statusEl.textContent = 'ファイルを読み込めませんでした。このツールで書き出したJSONファイルを選択してください。';
+        ev.target.value = '';
+        return;
+      }
+      if (!confirm('現在のこの端末のデータは、読み込んだ内容で上書きされます。よろしいですか？')) {
+        ev.target.value = '';
+        return;
+      }
+      schedule = sanitized;
+      save();
+      renderAll();
+      statusEl.className = '';
+      statusEl.textContent = 'JSONファイルを読み込みました。';
+      ev.target.value = '';
+    };
+    reader.onerror = function () {
+      statusEl.className = 'error';
+      statusEl.textContent = 'ファイルの読み込みに失敗しました。';
+      ev.target.value = '';
+    };
+    reader.readAsText(file);
   });
 
   load();
