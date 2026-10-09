@@ -23,6 +23,8 @@
     --today-soft: rgba(217,115,13,0.12);
     --danger: #B3442C;
     --danger-soft: rgba(179,68,44,0.10);
+    --live: #D23F3F;
+    --live-soft: rgba(210,63,63,0.12);
     --shadow: 0 1px 2px rgba(21,33,27,0.06), 0 8px 24px rgba(21,33,27,0.06);
   }
 
@@ -42,6 +44,8 @@
       --today-soft: rgba(242,153,74,0.16);
       --danger: #E08A73;
       --danger-soft: rgba(224,138,115,0.14);
+      --live: #FF7A7A;
+      --live-soft: rgba(255,122,122,0.16);
       --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
     }
   }
@@ -60,6 +64,8 @@
     --today-soft: rgba(242,153,74,0.16);
     --danger: #E08A73;
     --danger-soft: rgba(224,138,115,0.14);
+    --live: #FF7A7A;
+    --live-soft: rgba(255,122,122,0.16);
     --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
   }
 
@@ -171,15 +177,47 @@
     border-left: 1px solid var(--border);
   }
 
+  /* ---------- Running timer bar ---------- */
+  .running-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--live-soft);
+    border: 1px solid var(--live);
+    border-radius: 14px;
+    padding: 10px 16px;
+  }
+  .running-bar[hidden] { display: none; }
+
+  .running-bar-text { flex: 1; min-width: 0; }
+  .running-bar-label {
+    font-size: 13px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .running-bar-elapsed { font-size: 12.5px; color: var(--text-muted); }
+
+  .live-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--live);
+    flex-shrink: 0;
+    animation: live-pulse 1.4s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
+  @keyframes live-pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--live-soft); }
+    50% { opacity: 0.55; box-shadow: 0 0 0 5px var(--live-soft); }
+  }
+
   /* ---------- Panels ---------- */
   .controls {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 16px;
-  }
-
-  @media (max-width: 760px) {
-    .controls { grid-template-columns: 1fr; }
   }
 
   .panel {
@@ -195,6 +233,9 @@
     font-size: 14.5px;
     font-weight: 600;
     margin-bottom: 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
   }
 
   .panel .hint {
@@ -202,6 +243,12 @@
     color: var(--text-muted);
     line-height: 1.6;
     margin-bottom: 14px;
+  }
+
+  .scope-tag {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
   }
 
   .row {
@@ -259,6 +306,17 @@
   }
   .btn.danger:hover { background: var(--danger-soft); }
 
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn.timer-btn.running {
+    background: var(--live);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn.timer-btn.running:hover { background: var(--live); opacity: 0.9; }
+
   #import-status, #sync-status {
     margin-top: 10px;
     font-size: 12px;
@@ -278,6 +336,44 @@
   }
   input[type="time"], input[type="number"] { font-family: 'Roboto Mono', monospace; }
   input:focus, textarea:focus { outline: 2px solid var(--primary); outline-offset: 1px; border-color: var(--primary); }
+  input:disabled { opacity: 0.45; }
+
+  /* ---------- Category chips ---------- */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 6px 5px 12px;
+    font-size: 12.5px;
+  }
+
+  .chip-remove {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 11px;
+    line-height: 1;
+    padding: 4px 7px;
+    border-radius: 50%;
+  }
+  .chip-remove:hover { color: var(--danger); background: var(--danger-soft); }
+
+  /* ---------- Scope bar ---------- */
+  .scope-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0 2px;
+  }
+  .scope-note { font-size: 12.5px; color: var(--text-muted); }
 
   /* ---------- Day cards ---------- */
   .days { display: flex; flex-direction: column; gap: 14px; }
@@ -321,7 +417,9 @@
   .day-total { font-size: 12.5px; color: var(--text-muted); }
   .day-total .mono { color: var(--primary-strong); font-weight: 600; }
 
-  table.entries { width: 100%; border-collapse: collapse; }
+  .table-scroll { overflow-x: auto; }
+
+  table.entries { width: 100%; min-width: 860px; border-collapse: collapse; }
 
   table.entries th {
     font-size: 10.5px;
@@ -340,13 +438,17 @@
   }
 
   table.entries td.col-time { width: 106px; }
+  table.entries td.col-category { width: 136px; }
   table.entries td.col-min { width: 84px; }
+  table.entries td.col-timer { width: 108px; }
   table.entries td.col-del { width: 36px; text-align: center; }
 
   table.entries input[type="time"] { width: 100px; }
   table.entries input[type="number"] { width: 62px; }
-  table.entries input.content-input { width: 100%; }
+  table.entries input.content-input, table.entries input.category-input { width: 100%; }
   table.entries textarea.detail-input { width: 100%; resize: vertical; min-height: 30px; }
+
+  .timer-live { display: block; font-size: 10.5px; color: var(--text-muted); margin-top: 4px; }
 
   .row-del-btn {
     background: none;
@@ -406,17 +508,21 @@
 
   .no-data { color: var(--text-muted); font-size: 13px; padding: 4px 2px; }
 
+  .totals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 760px) {
+    .totals-grid { grid-template-columns: 1fr; }
+  }
+
   footer.page-footer {
     text-align: center;
     font-size: 10.5px;
     color: var(--text-muted);
     letter-spacing: 2px;
     margin-top: 8px;
-  }
-
-  @media (max-width: 600px) {
-    table.entries td.col-min { width: 64px; }
-    table.entries input[type="number"] { width: 48px; }
   }
 </style>
 </head>
@@ -447,6 +553,15 @@
       <span class="chip-note" id="today-note"></span>
     </div>
   </header>
+
+  <div class="running-bar" id="running-bar" hidden>
+    <span class="live-dot" aria-hidden="true"></span>
+    <div class="running-bar-text">
+      <div class="running-bar-label" id="running-bar-label"></div>
+      <div class="running-bar-elapsed mono" id="running-bar-elapsed"></div>
+    </div>
+    <button class="btn small" id="running-bar-stop">■ 終了</button>
+  </div>
 
   <div class="controls">
     <div class="panel">
@@ -480,15 +595,40 @@
         <button class="btn danger small" id="clear-all-btn">すべて削除</button>
       </div>
     </div>
+
+    <div class="panel">
+      <h2>業務種別を管理</h2>
+      <div class="hint">予定の「業務種別」欄に入力すると自動でここに追加されます。不要な項目は✕で削除できます（既存の予定の入力内容は変わりません）。</div>
+      <div class="chips" id="category-chips"></div>
+      <div class="row" style="margin-top:12px;">
+        <input type="text" id="new-category-input" placeholder="新しい業務種別">
+        <button class="btn small" id="add-category-btn">追加</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="scope-bar">
+    <div class="scope-note" id="scope-note"></div>
+    <button class="btn ghost small" id="toggle-view-btn"></button>
   </div>
 
   <div id="days-container" class="days"></div>
 
-  <div class="panel">
-    <h2>内容ごとの合計時間</h2>
-    <div class="hint">同じ「内容」と入力した予定をまとめて合計します（大文字小文字・前後の空白は区別しません）。</div>
-    <div id="totals-container"></div>
+  <div class="totals-grid">
+    <div class="panel">
+      <h2>内容ごとの合計時間 <span class="scope-tag" id="content-totals-scope"></span></h2>
+      <div class="hint">同じ「内容」と入力した予定をまとめて合計します（大文字小文字・前後の空白は区別しません）。</div>
+      <div id="totals-container"></div>
+    </div>
+
+    <div class="panel">
+      <h2>業務種別ごとの合計時間 <span class="scope-tag" id="category-totals-scope"></span></h2>
+      <div class="hint">予定の「業務種別」をまとめて合計します。</div>
+      <div id="category-totals-container"></div>
+    </div>
   </div>
+
+  <datalist id="category-options"></datalist>
 
   <footer class="page-footer">DAYTRACK · SCHEDULE &amp; TIME LOG</footer>
 </div>
@@ -499,32 +639,55 @@
 
   var STORAGE_KEY = 'daytrack.schedule.v1';
   var LEGACY_STORAGE_KEY = 'germanyTrip2026Schedule.v1';
-  /** @type {Object<string, Array<{id:string,time:string,minutes:number|null,content:string,details:string}>>} */
+
+  /** @type {Object<string, Array<{id:string,time:string,minutes:number|null,content:string,category:string,details:string}>>} */
   var schedule = {};
+  /** @type {string[]} */
+  var categories = [];
+  /** @type {{dateKey:string, entryId:string, startedAt:number}|null} */
+  var running = null;
+  /** 'today' shows only today's card; 'all' shows every date. Resets to 'today' on reload. */
+  var viewMode = 'today';
 
   function load() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        schedule = JSON.parse(raw);
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.days && typeof parsed.days === 'object') {
+          schedule = parsed.days;
+          categories = Array.isArray(parsed.categories) ? parsed.categories : [];
+          running = (parsed.running && typeof parsed.running === 'object') ? parsed.running : null;
+        } else if (parsed && typeof parsed === 'object') {
+          // pre-category flat shape stored under the current key
+          schedule = parsed;
+          categories = [];
+          running = null;
+          save();
+        } else {
+          schedule = {}; categories = []; running = null;
+        }
         return;
       }
       var legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
       if (legacy) {
-        schedule = JSON.parse(legacy);
+        var legacyParsed = JSON.parse(legacy);
+        schedule = (legacyParsed && typeof legacyParsed === 'object') ? legacyParsed : {};
+        categories = [];
+        running = null;
         save();
         localStorage.removeItem(LEGACY_STORAGE_KEY);
         return;
       }
-      schedule = {};
+      schedule = {}; categories = []; running = null;
     } catch (e) {
-      schedule = {};
+      schedule = {}; categories = []; running = null;
     }
   }
 
   function save() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ days: schedule, categories: categories, running: running }));
     } catch (e) { /* storage unavailable — edits stay in-memory only for this view */ }
   }
 
@@ -555,6 +718,15 @@
     if (h === 0) return m + '分';
     if (m === 0) return h + '時間';
     return h + '時間' + m + '分';
+  }
+
+  function formatElapsed(ms) {
+    var totalSec = Math.max(0, Math.floor(ms / 1000));
+    var h = Math.floor(totalSec / 3600);
+    var m = Math.floor((totalSec % 3600) / 60);
+    var s = totalSec % 60;
+    if (h > 0) return pad2(h) + ':' + pad2(m) + ':' + pad2(s);
+    return pad2(m) + ':' + pad2(s);
   }
 
   // ---------- ICS parsing ----------
@@ -653,6 +825,7 @@
         time: time,
         minutes: minutes,
         content: ev.summary || '(無題の予定)',
+        category: '',
         details: detailsParts.join('\n')
       });
     });
@@ -670,15 +843,72 @@
       ensureDate(e.date);
       schedule[e.date].push({
         id: e.id, time: e.time, minutes: e.minutes,
-        content: e.content, details: e.details
+        content: e.content, category: e.category || '', details: e.details
       });
     });
   }
+
+  function addCategory(name) {
+    var trimmed = (name || '').trim();
+    if (!trimmed) return false;
+    var exists = categories.some(function (c) { return c.toLowerCase() === trimmed.toLowerCase(); });
+    if (exists) return false;
+    categories.push(trimmed);
+    save();
+    return true;
+  }
+
+  function visibleDateKeys() {
+    var keys = Object.keys(schedule).sort();
+    if (viewMode === 'all') return keys;
+    var tKey = todayKey();
+    return keys.indexOf(tKey) !== -1 ? [tKey] : keys.slice(0, 0);
+  }
+
+  // ---------- timer ----------
+
+  function startTimer(dateKey, entryId) {
+    if (running) return;
+    var list = schedule[dateKey];
+    var entry = list && list.find(function (e) { return e.id === entryId; });
+    if (!entry) return;
+    var now = new Date();
+    entry.time = pad2(now.getHours()) + ':' + pad2(now.getMinutes());
+    running = { dateKey: dateKey, entryId: entryId, startedAt: Date.now() };
+    save();
+    renderAll();
+  }
+
+  function stopTimer() {
+    if (!running) return;
+    var list = schedule[running.dateKey];
+    var entry = list && list.find(function (e) { return e.id === running.entryId; });
+    if (entry) {
+      var elapsedMin = Math.round((Date.now() - running.startedAt) / 60000);
+      entry.minutes = Math.max(0, elapsedMin);
+    }
+    running = null;
+    save();
+    renderAll();
+  }
+
+  setInterval(function () {
+    if (!running) return;
+    var elapsed = formatElapsed(Date.now() - running.startedAt);
+    var liveEl = document.getElementById('timer-live-' + running.entryId);
+    if (liveEl) liveEl.textContent = '経過 ' + elapsed;
+    var barEl = document.getElementById('running-bar-elapsed');
+    if (barEl) barEl.textContent = elapsed;
+  }, 1000);
 
   // ---------- rendering ----------
 
   var daysContainer = document.getElementById('days-container');
   var totalsContainer = document.getElementById('totals-container');
+  var categoryTotalsContainer = document.getElementById('category-totals-container');
+  var categoryChipsEl = document.getElementById('category-chips');
+  var categoryOptionsEl = document.getElementById('category-options');
+  var runningBarEl = document.getElementById('running-bar');
 
   function renderToday() {
     var d = new Date();
@@ -693,13 +923,42 @@
     }
   }
 
+  function renderRunningBar() {
+    if (!running) { runningBarEl.hidden = true; return; }
+    var list = schedule[running.dateKey];
+    var entry = list && list.find(function (e) { return e.id === running.entryId; });
+    if (!entry) {
+      running = null;
+      save();
+      runningBarEl.hidden = true;
+      return;
+    }
+    runningBarEl.hidden = false;
+    document.getElementById('running-bar-label').textContent =
+      (entry.content ? entry.content : '(内容未入力)') + ' ・ ' + formatDateLabel(running.dateKey);
+    document.getElementById('running-bar-elapsed').textContent = formatElapsed(Date.now() - running.startedAt);
+  }
+
+  function renderScopeBar() {
+    var totalDays = Object.keys(schedule).length;
+    var note = document.getElementById('scope-note');
+    var btn = document.getElementById('toggle-view-btn');
+    if (viewMode === 'today') {
+      note.textContent = '本日のみ表示中';
+      btn.textContent = 'すべての日を表示（全' + totalDays + '日）';
+    } else {
+      note.textContent = '全' + totalDays + '日を表示中';
+      btn.textContent = '本日のみ表示に戻す';
+    }
+  }
+
   function dayTotalMinutes(dateKey) {
     var list = schedule[dateKey] || [];
     return list.reduce(function (sum, e) { return sum + (e.minutes || 0); }, 0);
   }
 
   function renderDays() {
-    var keys = Object.keys(schedule).sort();
+    var keys = visibleDateKeys();
     daysContainer.innerHTML = '';
     if (keys.length === 0) {
       var empty = document.createElement('div');
@@ -754,7 +1013,9 @@
           '<thead><tr>' +
           '<th class="col-time">時刻</th>' +
           '<th>内容</th>' +
+          '<th class="col-category">業務種別</th>' +
           '<th class="col-min">分</th>' +
+          '<th class="col-timer">タイマー</th>' +
           '<th>詳細</th>' +
           '<th class="col-del"></th>' +
           '</tr></thead>';
@@ -768,6 +1029,7 @@
         });
 
         sorted.forEach(function (entry) {
+          var isRunningHere = !!(running && running.dateKey === dateKey && running.entryId === entry.id);
           var tr = document.createElement('tr');
 
           var tdTime = document.createElement('td');
@@ -797,12 +1059,33 @@
           tdContent.appendChild(contentInput);
           tr.appendChild(tdContent);
 
+          var tdCategory = document.createElement('td');
+          tdCategory.className = 'col-category';
+          var categoryInput = document.createElement('input');
+          categoryInput.type = 'text';
+          categoryInput.className = 'category-input';
+          categoryInput.setAttribute('list', 'category-options');
+          categoryInput.value = entry.category || '';
+          categoryInput.placeholder = '業務種別';
+          categoryInput.addEventListener('change', function () {
+            var val = categoryInput.value.trim();
+            entry.category = val;
+            if (val) addCategory(val);
+            save();
+            renderCategoryChips();
+            renderTotals();
+          });
+          tdCategory.appendChild(categoryInput);
+          tr.appendChild(tdCategory);
+
           var tdMin = document.createElement('td');
           tdMin.className = 'col-min';
           var minInput = document.createElement('input');
           minInput.type = 'number';
           minInput.min = '0';
           minInput.step = '5';
+          minInput.disabled = isRunningHere;
+          minInput.title = isRunningHere ? 'タイマー終了時に自動入力されます' : '';
           minInput.value = entry.minutes === null || entry.minutes === undefined ? '' : entry.minutes;
           minInput.addEventListener('input', function () {
             var v = minInput.value === '' ? null : Math.max(0, parseInt(minInput.value, 10) || 0);
@@ -813,6 +1096,34 @@
           });
           tdMin.appendChild(minInput);
           tr.appendChild(tdMin);
+
+          var tdTimer = document.createElement('td');
+          tdTimer.className = 'col-timer';
+          var timerBtn = document.createElement('button');
+          timerBtn.type = 'button';
+          if (isRunningHere) {
+            timerBtn.className = 'btn small timer-btn running';
+            timerBtn.innerHTML = '<span class="live-dot" aria-hidden="true"></span>終了';
+            timerBtn.addEventListener('click', function () { stopTimer(); });
+          } else {
+            timerBtn.className = 'btn ghost small timer-btn';
+            timerBtn.textContent = '開始';
+            if (running) {
+              timerBtn.disabled = true;
+              timerBtn.title = '他の予定のタイマーが実行中です';
+            } else {
+              timerBtn.addEventListener('click', function () { startTimer(dateKey, entry.id); });
+            }
+          }
+          tdTimer.appendChild(timerBtn);
+          if (isRunningHere) {
+            var liveSpan = document.createElement('span');
+            liveSpan.className = 'timer-live mono';
+            liveSpan.id = 'timer-live-' + entry.id;
+            liveSpan.textContent = '経過 ' + formatElapsed(Date.now() - running.startedAt);
+            tdTimer.appendChild(liveSpan);
+          }
+          tr.appendChild(tdTimer);
 
           var tdDetail = document.createElement('td');
           var detailInput = document.createElement('textarea');
@@ -834,6 +1145,7 @@
           delBtn.title = '削除';
           delBtn.textContent = '✕';
           delBtn.addEventListener('click', function () {
+            if (isRunningHere) stopTimer();
             var idx = schedule[dateKey].findIndex(function (e) { return e.id === entry.id; });
             if (idx !== -1) schedule[dateKey].splice(idx, 1);
             save();
@@ -847,7 +1159,10 @@
         });
 
         table.appendChild(tbody);
-        card.appendChild(table);
+        var tableScroll = document.createElement('div');
+        tableScroll.className = 'table-scroll';
+        tableScroll.appendChild(table);
+        card.appendChild(tableScroll);
       }
 
       var footerRow = document.createElement('div');
@@ -856,7 +1171,7 @@
       addRowBtn.className = 'btn ghost small';
       addRowBtn.textContent = '+ 予定を追加';
       addRowBtn.addEventListener('click', function () {
-        schedule[dateKey].push({ id: uid(), time: '', minutes: null, content: '', details: '' });
+        schedule[dateKey].push({ id: uid(), time: '', minutes: null, content: '', category: '', details: '' });
         save();
         renderDays();
       });
@@ -877,26 +1192,26 @@
     if (el) el.innerHTML = 'この日の合計: <span class="mono">' + formatMinutes(dayTotalMinutes(dateKey)) + '</span>';
   }
 
-  function renderTotals() {
+  function computeGroups(entries, keyFn, emptyLabel) {
     var groups = {};
-    Object.keys(schedule).forEach(function (dateKey) {
-      schedule[dateKey].forEach(function (entry) {
-        var key = (entry.content || '').trim().toLowerCase();
-        if (!key) key = '(内容未入力)';
-        if (!groups[key]) groups[key] = { label: (entry.content || '').trim() || '(内容未入力)', minutes: 0, count: 0 };
-        groups[key].minutes += (entry.minutes || 0);
-        groups[key].count += 1;
-      });
+    entries.forEach(function (entry) {
+      var raw = (keyFn(entry) || '').trim();
+      var key = raw.toLowerCase() || '__empty__';
+      if (!groups[key]) groups[key] = { label: raw || emptyLabel, minutes: 0, count: 0 };
+      groups[key].minutes += (entry.minutes || 0);
+      groups[key].count += 1;
     });
-    var rows = Object.keys(groups).map(function (k) { return groups[k]; });
-    rows.sort(function (a, b) { return b.minutes - a.minutes; });
+    return Object.keys(groups).map(function (k) { return groups[k]; })
+      .sort(function (a, b) { return b.minutes - a.minutes; });
+  }
 
-    totalsContainer.innerHTML = '';
+  function renderTotalsInto(container, rows, noDataText) {
+    container.innerHTML = '';
     if (rows.length === 0) {
       var none = document.createElement('div');
       none.className = 'no-data';
-      none.textContent = 'まだ予定が登録されていません。';
-      totalsContainer.appendChild(none);
+      none.textContent = noDataText;
+      container.appendChild(none);
       return;
     }
     var grandTotal = rows.reduce(function (s, r) { return s + r.minutes; }, 0);
@@ -916,12 +1231,67 @@
       list.appendChild(row);
     });
 
-    totalsContainer.appendChild(list);
+    container.appendChild(list);
 
     var grand = document.createElement('div');
     grand.className = 'totals-grand';
     grand.innerHTML = '<span>合計</span><span class="mono">' + formatMinutes(grandTotal) + '</span>';
-    totalsContainer.appendChild(grand);
+    container.appendChild(grand);
+  }
+
+  function renderTotals() {
+    var dateKeys = visibleDateKeys();
+    var entries = [];
+    dateKeys.forEach(function (dk) {
+      (schedule[dk] || []).forEach(function (e) { entries.push(e); });
+    });
+
+    var scopeLabel = viewMode === 'today' ? '・ 本日' : ('・ 全' + dateKeys.length + '日');
+    document.getElementById('content-totals-scope').textContent = scopeLabel;
+    document.getElementById('category-totals-scope').textContent = scopeLabel;
+
+    var contentRows = computeGroups(entries, function (e) { return e.content; }, '(内容未入力)');
+    renderTotalsInto(totalsContainer, contentRows, 'まだ予定が登録されていません。');
+
+    var categoryRows = computeGroups(entries, function (e) { return e.category; }, '(未分類)');
+    renderTotalsInto(categoryTotalsContainer, categoryRows, 'まだ業務種別が登録されていません。');
+  }
+
+  function renderCategoryChips() {
+    categoryChipsEl.innerHTML = '';
+    if (categories.length === 0) {
+      var none = document.createElement('div');
+      none.className = 'no-data';
+      none.textContent = 'まだ業務種別がありません。';
+      categoryChipsEl.appendChild(none);
+    } else {
+      categories.forEach(function (cat) {
+        var chip = document.createElement('span');
+        chip.className = 'chip';
+        var label = document.createElement('span');
+        label.textContent = cat;
+        chip.appendChild(label);
+        var removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'chip-remove';
+        removeBtn.setAttribute('aria-label', cat + 'を削除');
+        removeBtn.textContent = '✕';
+        removeBtn.addEventListener('click', function () {
+          categories = categories.filter(function (c) { return c !== cat; });
+          save();
+          renderCategoryChips();
+        });
+        chip.appendChild(removeBtn);
+        categoryChipsEl.appendChild(chip);
+      });
+    }
+
+    categoryOptionsEl.innerHTML = '';
+    categories.forEach(function (cat) {
+      var opt = document.createElement('option');
+      opt.value = cat;
+      categoryOptionsEl.appendChild(opt);
+    });
   }
 
   function escapeHtml(s) {
@@ -931,12 +1301,23 @@
   }
 
   function renderAll() {
+    ensureDate(todayKey());
     renderToday();
+    renderRunningBar();
+    renderScopeBar();
     renderDays();
     renderTotals();
+    renderCategoryChips();
   }
 
   // ---------- events ----------
+
+  document.getElementById('toggle-view-btn').addEventListener('click', function () {
+    viewMode = viewMode === 'today' ? 'all' : 'today';
+    renderAll();
+  });
+
+  document.getElementById('running-bar-stop').addEventListener('click', function () { stopTimer(); });
 
   document.getElementById('ics-file').addEventListener('change', function (ev) {
     var files = Array.prototype.slice.call(ev.target.files || []);
@@ -958,6 +1339,7 @@
         }
         pending--;
         if (pending === 0) {
+          if (totalImported > 0) viewMode = 'all';
           save();
           renderAll();
           statusEl.className = hadError ? 'error' : '';
@@ -984,6 +1366,7 @@
   document.getElementById('clear-all-btn').addEventListener('click', function () {
     if (confirm('すべてのスケジュールデータを削除します。よろしいですか？（この操作は元に戻せません）')) {
       schedule = {};
+      running = null;
       save();
       renderAll();
     }
@@ -993,39 +1376,80 @@
     var input = document.getElementById('new-date-input');
     if (!input.value) return;
     ensureDate(input.value);
+    if (input.value !== todayKey()) viewMode = 'all';
     save();
     renderAll();
   });
 
-  function sanitizeImportedSchedule(raw) {
-    var src = (raw && typeof raw === 'object' && raw.schedule && typeof raw.schedule === 'object')
-      ? raw.schedule
-      : raw;
-    if (!src || typeof src !== 'object') return null;
-    var result = {};
-    Object.keys(src).forEach(function (dateKey) {
+  document.getElementById('add-category-btn').addEventListener('click', function () {
+    var input = document.getElementById('new-category-input');
+    if (addCategory(input.value)) {
+      input.value = '';
+      renderCategoryChips();
+    } else {
+      input.value = '';
+    }
+  });
+
+  document.getElementById('new-category-input').addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter') {
+      ev.preventDefault();
+      document.getElementById('add-category-btn').click();
+    }
+  });
+
+  function sanitizeImportedState(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    var daysSrc = null;
+    var categoriesSrc = null;
+    if (raw.days && typeof raw.days === 'object') {
+      daysSrc = raw.days;
+      categoriesSrc = raw.categories;
+    } else if (raw.schedule && typeof raw.schedule === 'object') {
+      daysSrc = raw.schedule;
+    } else {
+      daysSrc = raw;
+    }
+    if (!daysSrc || typeof daysSrc !== 'object') return null;
+
+    var resultDays = {};
+    Object.keys(daysSrc).forEach(function (dateKey) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return;
-      var list = src[dateKey];
+      var list = daysSrc[dateKey];
       if (!Array.isArray(list)) return;
-      result[dateKey] = list.map(function (e) {
+      resultDays[dateKey] = list.map(function (e) {
         return {
           id: (e && typeof e.id === 'string') ? e.id : uid(),
           time: (e && typeof e.time === 'string') ? e.time : '',
           minutes: (e && typeof e.minutes === 'number' && e.minutes >= 0) ? e.minutes : null,
           content: (e && typeof e.content === 'string') ? e.content : '',
+          category: (e && typeof e.category === 'string') ? e.category : '',
           details: (e && typeof e.details === 'string') ? e.details : ''
         };
       });
     });
-    return result;
+
+    var resultCategories = [];
+    if (Array.isArray(categoriesSrc)) {
+      categoriesSrc.forEach(function (c) {
+        if (typeof c !== 'string') return;
+        var trimmed = c.trim();
+        if (!trimmed) return;
+        var exists = resultCategories.some(function (x) { return x.toLowerCase() === trimmed.toLowerCase(); });
+        if (!exists) resultCategories.push(trimmed);
+      });
+    }
+
+    return { days: resultDays, categories: resultCategories };
   }
 
   document.getElementById('export-json-btn').addEventListener('click', function () {
     var payload = {
       app: 'daytrack-schedule',
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
-      schedule: schedule
+      days: schedule,
+      categories: categories
     };
     var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
@@ -1051,7 +1475,7 @@
       var parsed, sanitized;
       try {
         parsed = JSON.parse(String(reader.result));
-        sanitized = sanitizeImportedSchedule(parsed);
+        sanitized = sanitizeImportedState(parsed);
       } catch (e) {
         sanitized = null;
       }
@@ -1065,7 +1489,10 @@
         ev.target.value = '';
         return;
       }
-      schedule = sanitized;
+      schedule = sanitized.days;
+      categories = sanitized.categories;
+      running = null;
+      viewMode = 'all';
       save();
       renderAll();
       statusEl.className = '';
