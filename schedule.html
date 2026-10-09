@@ -375,6 +375,29 @@
   }
   .scope-note { font-size: 12.5px; color: var(--text-muted); }
 
+  .scope-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .format-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .format-btn {
+    background: var(--surface);
+    color: var(--text-muted);
+    border: none;
+    padding: 6px 11px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+  }
+  .format-btn + .format-btn { border-left: 1px solid var(--border); }
+  .format-btn:hover { background: var(--surface-alt); }
+  .format-btn.active { background: var(--primary); color: var(--on-primary); }
+  .format-btn.active:hover { background: var(--primary); }
+
   /* ---------- Day cards ---------- */
   .days { display: flex; flex-direction: column; gap: 14px; }
 
@@ -609,7 +632,13 @@
 
   <div class="scope-bar">
     <div class="scope-note" id="scope-note"></div>
-    <button class="btn ghost small" id="toggle-view-btn"></button>
+    <div class="scope-actions">
+      <div class="format-toggle" role="group" aria-label="合計時間の表記">
+        <button type="button" class="format-btn" data-format="hm">時間+分</button>
+        <button type="button" class="format-btn" data-format="m">分のみ</button>
+      </div>
+      <button class="btn ghost small" id="toggle-view-btn"></button>
+    </div>
   </div>
 
   <div id="days-container" class="days"></div>
@@ -648,6 +677,8 @@
   var running = null;
   /** 'today' shows only today's card; 'all' shows every date. Resets to 'today' on reload. */
   var viewMode = 'today';
+  /** 'hm' = "2時間30分"; 'm' = "150分". */
+  var timeFormat = 'hm';
 
   function load() {
     try {
@@ -658,6 +689,7 @@
           schedule = parsed.days;
           categories = Array.isArray(parsed.categories) ? parsed.categories : [];
           running = (parsed.running && typeof parsed.running === 'object') ? parsed.running : null;
+          timeFormat = (parsed.timeFormat === 'm') ? 'm' : 'hm';
         } else if (parsed && typeof parsed === 'object') {
           // pre-category flat shape stored under the current key
           schedule = parsed;
@@ -687,7 +719,7 @@
 
   function save() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ days: schedule, categories: categories, running: running }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ days: schedule, categories: categories, running: running, timeFormat: timeFormat }));
     } catch (e) { /* storage unavailable — edits stay in-memory only for this view */ }
   }
 
@@ -712,9 +744,11 @@
   }
 
   function formatMinutes(total) {
-    if (!total || total <= 0) return '0分';
-    var h = Math.floor(total / 60);
-    var m = total % 60;
+    var t = total && total > 0 ? total : 0;
+    if (timeFormat === 'm') return t + '分';
+    if (t === 0) return '0分';
+    var h = Math.floor(t / 60);
+    var m = t % 60;
     if (h === 0) return m + '分';
     if (m === 0) return h + '時間';
     return h + '時間' + m + '分';
@@ -950,6 +984,9 @@
       note.textContent = '全' + totalDays + '日を表示中';
       btn.textContent = '本日のみ表示に戻す';
     }
+    document.querySelectorAll('.format-btn').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-format') === timeFormat);
+    });
   }
 
   function dayTotalMinutes(dateKey) {
@@ -1315,6 +1352,14 @@
   document.getElementById('toggle-view-btn').addEventListener('click', function () {
     viewMode = viewMode === 'today' ? 'all' : 'today';
     renderAll();
+  });
+
+  document.querySelectorAll('.format-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      timeFormat = btn.getAttribute('data-format') === 'm' ? 'm' : 'hm';
+      save();
+      renderAll();
+    });
   });
 
   document.getElementById('running-bar-stop').addEventListener('click', function () { stopTimer(); });
