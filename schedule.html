@@ -605,9 +605,87 @@
   .check-label { font-size: 12px; color: var(--text-muted); display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
   .check-label[hidden] { display: none; }
 
+  .edit-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    border: 1px solid var(--warn);
+    background: var(--warn-soft);
+    border-radius: 10px;
+  }
+  .edit-bar[hidden] { display: none; }
+  .edit-bar-text { font-size: 12.5px; }
+  .edit-bar-text b { font-family: 'Roboto Mono', monospace; color: var(--warn); font-size: 15px; }
+
+  .report-output {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface-alt);
+    border-radius: 10px;
+  }
+  .report-output[hidden] { display: none; }
+  .report-output-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .report-output-head h3 { font-family: 'Sora', 'Zen Kaku Gothic New', sans-serif; font-size: 13.5px; font-weight: 600; }
+  .diff-list { list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; }
+  .diff-list li { overflow-wrap: anywhere; }
+  .diff-list .diff-arrow { color: var(--text-muted); margin: 0 4px; }
+  .diff-list .st-done, .diff-list .st-hold { background: var(--surface); border-color: var(--text-muted); }
+  #report-output-text { width: 100%; font-family: 'Roboto Mono', 'Zen Kaku Gothic New', monospace; font-size: 12px; line-height: 1.55; resize: vertical; background: var(--surface); white-space: pre; overflow-x: auto; }
+  #report-output-status { font-size: 12px; color: var(--primary-strong); min-height: 16px; }
+
+  .task-state { display: flex; align-items: center; gap: 6px; }
+  .task-check { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+  .st-select {
+    appearance: none;
+    -webkit-appearance: none;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 18px 3px 8px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .task-state .st-select {
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: right 9px center, right 5px center;
+    background-size: 4px 4px, 4px 4px;
+    background-repeat: no-repeat;
+  }
+  .st-select:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
+  .task-state .st-select.st-done { background-color: var(--surface-alt); }
+  .task-state .st-select.st-doing { background-color: var(--warn-soft); }
+  .task-state .st-select.st-todo, .task-state .st-select.st-plan,
+  .task-state .st-select.st-hold, .task-state .st-select.st-none { background-color: var(--surface); }
+  .st-select option { color: var(--text); background: var(--surface); }
+
+  .edit-tag {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 700;
+    background: var(--warn-soft);
+    color: var(--warn);
+    border: 1px solid var(--warn);
+    padding: 0 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: 1px;
+    text-decoration: none;
+  }
+  .task-row.is-closed .task-text .edit-tag,
+  .task-row.is-closed .task-text .changed-tag { text-decoration: none; }
+
   .task-row {
     display: grid;
-    grid-template-columns: 72px 1fr auto;
+    grid-template-columns: 132px 1fr auto;
     gap: 4px 12px;
     align-items: center;
     padding: 9px 10px 9px 10px;
@@ -817,10 +895,41 @@
     </div>
     <div id="report-status"></div>
     <div id="task-summary" class="task-summary"></div>
+
+    <div class="edit-bar" id="edit-bar" hidden>
+      <span class="edit-bar-text" id="edit-bar-text"></span>
+      <div class="row">
+        <button type="button" class="btn small" id="make-report-btn">週報テキストを作成</button>
+        <button type="button" class="btn ghost small" id="revert-edits-btn">変更を元に戻す</button>
+      </div>
+    </div>
+
+    <div class="report-output" id="report-output" hidden>
+      <div class="report-output-head">
+        <h3>更新した週報</h3>
+        <button type="button" class="btn ghost small" id="report-output-close">閉じる</button>
+      </div>
+      <ul class="diff-list" id="diff-list"></ul>
+      <label class="check-label"><input type="checkbox" id="clear-old-bars" checked> 前回の「|」を外し、今回変更した行だけに付ける</label>
+      <textarea id="report-output-text" rows="14" readonly></textarea>
+      <div class="row">
+        <button type="button" class="btn small" id="copy-report-btn">コピー</button>
+        <button type="button" class="btn ghost small" id="download-report-btn">.txtで保存</button>
+        <button type="button" class="btn ghost small" id="commit-report-btn">この内容を新しい週報として確定</button>
+      </div>
+      <div id="report-output-status"></div>
+    </div>
+
     <div class="task-toolbar" id="task-toolbar">
-      <div class="format-toggle" role="group" aria-label="タスクの表示方法">
-        <button type="button" class="seg-btn" data-view="due">期限順</button>
-        <button type="button" class="seg-btn" data-view="tree">週報の構成</button>
+      <div class="row">
+        <div class="format-toggle" role="group" aria-label="タスクの表示方法">
+          <button type="button" class="seg-btn" data-view="due">期限順</button>
+          <button type="button" class="seg-btn" data-view="tree">週報の構成</button>
+        </div>
+        <div class="format-toggle" role="group" aria-label="表示するタスク">
+          <button type="button" class="seg-btn" data-filter="all">すべて</button>
+          <button type="button" class="seg-btn" data-filter="urgent">期限切れ＋1週間以内</button>
+        </div>
       </div>
       <label class="check-label" id="show-done-label"><input type="checkbox" id="show-done-tasks"> 完了も表示</label>
     </div>
@@ -864,17 +973,32 @@
   /** 'hm' = "2時間30分"; 'm' = "150分". */
   var timeFormat = 'hm';
   /** Raw weekly report; tasks are re-parsed from the text so parser fixes apply to old imports. */
-  /** @type {{text:string, sourceName:string, importedAt:string}|null} */
+  /** @type {{text:string, sourceName:string, importedAt:string, overrides:Object<string,string>}|null} */
   var report = null;
   var reportModel = null;
   /** 'due' = flat list sorted by deadline; 'tree' = the report's own section structure. */
   var taskView = 'due';
+  /** 'all' or 'urgent' (overdue + due within 7 days). */
+  var taskFilter = 'all';
   var showDoneTasks = false;
 
   function sanitizeReport(r) {
     if (!r || typeof r !== 'object' || typeof r.text !== 'string' || !r.text.trim()) return null;
     var at = (typeof r.importedAt === 'string' && !isNaN(Date.parse(r.importedAt))) ? r.importedAt : new Date().toISOString();
-    return { text: r.text, sourceName: typeof r.sourceName === 'string' ? r.sourceName : '', importedAt: at };
+    var overrides = {};
+    if (r.overrides && typeof r.overrides === 'object') {
+      Object.keys(r.overrides).forEach(function (k) {
+        if (/^\d+$/.test(k) && EDITABLE_STATUSES.indexOf(r.overrides[k]) !== -1) overrides[k] = r.overrides[k];
+      });
+    }
+    return { text: r.text, sourceName: typeof r.sourceName === 'string' ? r.sourceName : '', importedAt: at, overrides: overrides };
+  }
+
+  function loadTaskPrefs(p) {
+    if (!p || typeof p !== 'object') return;
+    taskView = p.view === 'tree' ? 'tree' : 'due';
+    taskFilter = p.filter === 'urgent' ? 'urgent' : 'all';
+    showDoneTasks = p.showDone === true;
   }
 
   function load() {
@@ -888,6 +1012,7 @@
           running = (parsed.running && typeof parsed.running === 'object') ? parsed.running : null;
           timeFormat = (parsed.timeFormat === 'm') ? 'm' : 'hm';
           report = sanitizeReport(parsed.report);
+          loadTaskPrefs(parsed.taskPrefs);
         } else if (parsed && typeof parsed === 'object') {
           // pre-category flat shape stored under the current key
           schedule = parsed;
@@ -917,7 +1042,8 @@
 
   function save() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ days: schedule, categories: categories, running: running, timeFormat: timeFormat, report: report }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ days: schedule, categories: categories, running: running, timeFormat: timeFormat, report: report,
+        taskPrefs: { view: taskView, filter: taskFilter, showDone: showDoneTasks } }));
     } catch (e) { /* storage unavailable — edits stay in-memory only for this view */ }
   }
 
@@ -1117,7 +1243,12 @@
     '保留': 'hold', '保': 'hold',
     '中止': 'cancel', '止': 'cancel'
   };
-  var MARKER_RE = /^[<＜\[［【]\s*(完了|済み|進行中|進行|未着手|予定|保留|中止|完|済|中|未|予|保|止)\s*[>＞\]］】]\s*(.*)$/;
+  var MARKER_RE = /^([<＜\[［【]\s*)(完了|済み|進行中|進行|未着手|予定|保留|中止|完|済|中|未|予|保|止)(\s*[>＞\]］】])\s*(.*)$/;
+  var CHECKBOX_RE = /^((?:[-*・]\s*)?\[)([ xX✓]?)(\])\s*(.*)$/;
+  var SYMBOL_RE = /^([☑✅✔✓☐□])\s*(.*)$/;
+  // Marker written back into the report when a status is changed in the app.
+  var STATUS_MARK = { done: '完', doing: '中', todo: '未', plan: '予', hold: '保留', cancel: '中止' };
+  var EDITABLE_STATUSES = ['done', 'doing', 'todo', 'plan', 'hold', 'cancel'];
   var DASH = '[-－ー‐−―]';
   var DATE_PREFIX_RE = new RegExp('^(' + DASH + '?)\\s*(\\d{1,2})/(\\d{1,2})(?!\\d)\\s*(.*)$');
   var LEADING_DASH_RE = new RegExp('^' + DASH + '\\s*');
@@ -1164,7 +1295,8 @@
       stack.push(node);
     }
 
-    function addTask(status, marker, rest, changed) {
+    // mark = where the status marker sits in the raw line, so it can be rewritten in place later.
+    function addTask(status, marker, rest, changed, mark) {
       var body = rest.trim();
       var half = toHalf(body);
       var date = null;
@@ -1192,16 +1324,18 @@
         kind: kind,
         inheritedDue: date ? null : inherited,
         changed: changed,
+        mark: mark,
         path: stack.slice(1).map(function (n) { return n.title; })
       };
       tasks.push(task);
       current().tasks.push(task);
     }
 
-    text.split(/\r\n|\n|\r/).forEach(function (raw) {
+    text.split(/\r\n|\n|\r/).forEach(function (raw, lineIndex) {
       var line = raw.replace(/\s+$/, '');
       if (!line.trim()) return;
       if (/^\s*('''|```|""")\s*$/.test(line)) return;
+      var trimmedLen = line.length;
 
       // A "|" in the first column is a change bar marking lines updated since the last report.
       var changed = false;
@@ -1210,12 +1344,26 @@
       var t = line.replace(/^[\s　]+/, '');
       if (!t) return;
       var h = toHalf(t);
+      var offset = trimmedLen - t.length;
       var m;
 
-      if ((m = MARKER_RE.exec(t))) { addTask(MARKER_STATUS[m[1]], m[1], m[2], changed); return; }
-      if ((m = /^(?:[-*・]\s*)?\[([ xX✓]?)\]\s*(.*)$/.exec(t))) { addTask(m[1].trim() ? 'done' : 'todo', m[1].trim() ? '完' : '未', m[2], changed); return; }
-      if ((m = /^[☑✅✔✓]\s*(.*)$/.exec(t))) { addTask('done', '完', m[1], changed); return; }
-      if ((m = /^[☐□]\s*(.*)$/.exec(t))) { addTask('todo', '未', m[1], changed); return; }
+      if ((m = MARKER_RE.exec(t))) {
+        addTask(MARKER_STATUS[m[2]], m[2], m[4], changed,
+          { line: lineIndex, offset: offset, kind: 'angle', open: m[1], close: m[3], len: m[1].length + m[2].length + m[3].length });
+        return;
+      }
+      if ((m = CHECKBOX_RE.exec(t))) {
+        var checked = !!m[2].trim();
+        addTask(checked ? 'done' : 'todo', checked ? '完' : '未', m[4], changed,
+          { line: lineIndex, offset: offset, kind: 'check', open: m[1], close: m[3], len: m[1].length + m[2].length + m[3].length });
+        return;
+      }
+      if ((m = SYMBOL_RE.exec(t))) {
+        var sym = '☐□'.indexOf(m[1]) === -1;
+        addTask(sym ? 'done' : 'todo', sym ? '完' : '未', m[2], changed,
+          { line: lineIndex, offset: offset, kind: 'symbol', len: m[1].length });
+        return;
+      }
 
       if ((m = /^\d+[.．](?!\d)\s*(.+)$/.exec(h))) { openNode(1, m[1], changed); return; }
       if ((m = /^[■◆●]\s*(.+)$/.exec(t))) { openNode(1, m[1], changed); return; }
@@ -1229,7 +1377,10 @@
         return;
       }
       // A bullet with no status mark is still a task — surface it as "状態未記入" rather than hiding it.
-      if ((m = /^[-・•]\s*(.+)$/.exec(t))) { addTask('none', '', m[1], changed); return; }
+      if ((m = /^[-・•]\s*(.+)$/.exec(t))) {
+        addTask('none', '', m[1], changed, { line: lineIndex, offset: offset, kind: 'none', len: 0 });
+        return;
+      }
 
       current().notes.push({ mark: '', text: t, changed: changed });
     });
@@ -1249,7 +1400,77 @@
 
   function taskDue(task) { return task.date || task.inheritedDue; }
 
-  function isClosed(task) { return STATUS_INFO[task.status].closed; }
+  // The imported report is the baseline; statuses changed in the app live in report.overrides keyed by line number.
+  function effectiveStatus(task) {
+    var o = report && report.overrides ? report.overrides[task.mark.line] : null;
+    return o || task.status;
+  }
+
+  function isEdited(task) { return effectiveStatus(task) !== task.status; }
+
+  function isClosed(task) { return STATUS_INFO[effectiveStatus(task)].closed; }
+
+  function setTaskStatus(task, status) {
+    if (!report) return;
+    if (!report.overrides) report.overrides = {};
+    if (status === task.status) delete report.overrides[task.mark.line];
+    else report.overrides[task.mark.line] = status;
+    save();
+    renderAll();
+    if (!document.getElementById('report-output').hidden) renderReportOutput();
+  }
+
+  function editedTasks() {
+    return reportModel ? reportModel.tasks.filter(isEdited) : [];
+  }
+
+  function rewriteTaskLine(line, task, status) {
+    var mk = task.mark;
+    var before = line.slice(0, mk.offset);
+    var after = line.slice(mk.offset + mk.len);
+    var angle = '<' + STATUS_MARK[status] + '>';
+    if (mk.kind === 'angle') return before + mk.open + STATUS_MARK[status] + mk.close + after;
+    if (mk.kind === 'check') {
+      if (status === 'done') return before + mk.open + 'x' + mk.close + after;
+      if (status === 'todo') return before + mk.open + ' ' + mk.close + after;
+      return before + angle + after;
+    }
+    if (mk.kind === 'symbol') {
+      if (status === 'done') return before + '☑' + after;
+      if (status === 'todo') return before + '☐' + after;
+      return before + angle + after;
+    }
+    return before + angle + ' ' + after;
+  }
+
+  // Change bar replaces the first indent space so column alignment is kept, matching how the report marks edits.
+  function addChangeBar(line) {
+    if (/^[|｜]/.test(line)) return line;
+    if (line.charAt(0) === ' ') return '|' + line.slice(1);
+    if (line.charAt(0) === '　') return '| ' + line.slice(1);
+    return '|' + line;
+  }
+
+  function removeChangeBar(line) {
+    if (line.charAt(0) === '|') return ' ' + line.slice(1);
+    if (line.charAt(0) === '｜') return '  ' + line.slice(1);
+    return line;
+  }
+
+  function buildUpdatedReport(clearOldBars) {
+    var nl = report.text.indexOf('\r\n') !== -1 ? '\r\n' : '\n';
+    var lines = report.text.split(/\r\n|\n|\r/);
+    var changedLines = {};
+    reportModel.tasks.forEach(function (t) {
+      if (!isEdited(t)) return;
+      lines[t.mark.line] = rewriteTaskLine(lines[t.mark.line], t, effectiveStatus(t));
+      changedLines[t.mark.line] = true;
+    });
+    return lines.map(function (l, i) {
+      if (changedLines[i]) return addChangeBar(l);
+      return clearOldBars ? removeChangeBar(l) : l;
+    }).join(nl);
+  }
 
   // Urgency only applies to open tasks; closed ones are informational.
   function taskUrgency(task, today) {
@@ -1284,8 +1505,8 @@
       if (u === 'overdue') s.overdue++;
       else if (u === 'today') s.today++;
       else if (u === 'soon') s.soon++;
-      if (t.status === 'doing') s.doing++;
-      if (t.status === 'none') s.none++;
+      if (effectiveStatus(t) === 'doing') s.doing++;
+      if (effectiveStatus(t) === 'none') s.none++;
     });
     return s;
   }
@@ -1315,7 +1536,8 @@
       statusEl.textContent = 'タスク行が見つかりませんでした。各行の先頭に <完> <中> <未> <予> などの印が付いているか確認してください。';
       return false;
     }
-    report = { text: text, sourceName: sourceName, importedAt: now.toISOString() };
+    report = { text: text, sourceName: sourceName, importedAt: now.toISOString(), overrides: {} };
+    document.getElementById('report-output').hidden = true;
     reportModel = model;
     save();
     renderAll();
@@ -1788,22 +2010,54 @@
   }
 
   function buildTaskRow(task, today, showPath, addedKeys) {
-    var info = STATUS_INFO[task.status];
+    var status = effectiveStatus(task);
+    var info = STATUS_INFO[status];
     var urg = taskUrgency(task, today);
     var rowCls = 'task-row';
     if (info.closed) rowCls += ' is-closed';
     else if (urg.key === 'overdue') rowCls += ' u-overdue';
     else if (urg.key === 'today') rowCls += ' u-today';
-    else if (task.status === 'none') rowCls += ' u-none';
-    else if (task.status === 'doing') rowCls += ' u-doing';
+    else if (status === 'none') rowCls += ' u-none';
+    else if (status === 'doing') rowCls += ' u-doing';
 
     var row = document.createElement('div');
     row.className = rowCls;
 
-    var pill = document.createElement('span');
-    pill.className = 'st-pill ' + info.cls;
-    pill.textContent = info.label;
-    row.appendChild(pill);
+    var state = document.createElement('div');
+    state.className = 'task-state';
+    var check = document.createElement('input');
+    check.type = 'checkbox';
+    check.className = 'task-check';
+    check.checked = status === 'done';
+    check.title = '完了にする';
+    check.setAttribute('aria-label', task.text + 'を完了にする');
+    check.addEventListener('change', function () {
+      // Unchecking returns to the report's own status, or 未着手 if the report already had it closed.
+      var back = STATUS_INFO[task.status].closed ? 'todo' : task.status;
+      setTaskStatus(task, check.checked ? 'done' : back);
+    });
+    state.appendChild(check);
+
+    var sel = document.createElement('select');
+    sel.className = 'st-select ' + info.cls;
+    sel.setAttribute('aria-label', task.text + 'の状態');
+    if (status === 'none') {
+      var noneOpt = document.createElement('option');
+      noneOpt.value = 'none';
+      noneOpt.textContent = STATUS_INFO.none.label;
+      noneOpt.disabled = true;
+      sel.appendChild(noneOpt);
+    }
+    EDITABLE_STATUSES.forEach(function (s) {
+      var opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = STATUS_INFO[s].label;
+      sel.appendChild(opt);
+    });
+    sel.value = status;
+    sel.addEventListener('change', function () { setTaskStatus(task, sel.value); });
+    state.appendChild(sel);
+    row.appendChild(state);
 
     var main = document.createElement('div');
     main.className = 'task-main';
@@ -1816,6 +2070,12 @@
       tag.textContent = '更新';
       tag.title = '週報で「|」が付いた行（前回からの更新）';
       textEl.appendChild(tag);
+    }
+    if (status !== task.status) {
+      var editTag = document.createElement('span');
+      editTag.className = 'edit-tag';
+      editTag.textContent = '変更: ' + STATUS_INFO[task.status].label + '→' + info.label;
+      textEl.appendChild(editTag);
     }
     main.appendChild(textEl);
     if (showPath && task.path.length) {
@@ -1889,11 +2149,18 @@
     });
   }
 
-  function buildTreeNode(node, today, addedKeys) {
+  function nodeHasTask(node, pred) {
+    return node.tasks.some(pred) || node.children.some(function (ch) { return nodeHasTask(ch, pred); });
+  }
+
+  // Returns null when filtering hides every task under this node.
+  function buildTreeNode(node, today, addedKeys, visible) {
+    if (visible && !nodeHasTask(node, visible)) return null;
     var c = countNode(node, today);
     var det = document.createElement('details');
     det.className = 'node-l' + Math.min(node.level, 3);
-    det.open = c.open > 0;
+    // Keep a section open after its last task is checked off, so the change stays in view.
+    det.open = !!visible || c.open > 0 || nodeHasTask(node, isEdited);
 
     var sum = document.createElement('summary');
     var title = document.createElement('span');
@@ -1925,10 +2192,63 @@
     var body = document.createElement('div');
     body.className = 'node-body';
     buildNotes(body, node.notes);
-    node.tasks.forEach(function (t) { body.appendChild(buildTaskRow(t, today, false, addedKeys)); });
-    node.children.forEach(function (ch) { body.appendChild(buildTreeNode(ch, today, addedKeys)); });
+    node.tasks.forEach(function (t) {
+      if (!visible || visible(t)) body.appendChild(buildTaskRow(t, today, false, addedKeys));
+    });
+    node.children.forEach(function (ch) {
+      var el = buildTreeNode(ch, today, addedKeys, visible);
+      if (el) body.appendChild(el);
+    });
     det.appendChild(body);
     return det;
+  }
+
+  function isUrgent(task, today) {
+    var k = taskUrgency(task, today).key;
+    return k === 'overdue' || k === 'today' || k === 'soon';
+  }
+
+  function renderEditBar() {
+    var bar = document.getElementById('edit-bar');
+    var n = editedTasks().length;
+    bar.hidden = !reportModel;
+    document.getElementById('edit-bar-text').innerHTML =
+      n ? '週報から変更した状態 <b>' + n + '</b> 件（週報テキストに反映すると「|」が付きます）'
+        : '状態はチェックボックスや選択肢で変更できます。変更後に週報テキストを作成できます。';
+    document.getElementById('revert-edits-btn').hidden = n === 0;
+  }
+
+  function renderReportOutput() {
+    var diffList = document.getElementById('diff-list');
+    diffList.innerHTML = '';
+    var edited = editedTasks();
+    if (edited.length === 0) {
+      var li0 = document.createElement('li');
+      li0.textContent = '状態の変更はありません（「|」の整理のみ行います）。';
+      diffList.appendChild(li0);
+    }
+    edited.forEach(function (t) {
+      var li = document.createElement('li');
+      var name = document.createElement('span');
+      name.textContent = t.text + '（' + (t.path[t.path.length - 1] || '') + '）：';
+      var from = document.createElement('span');
+      from.className = 'st-pill ' + STATUS_INFO[t.status].cls;
+      from.textContent = STATUS_INFO[t.status].label;
+      var arrow = document.createElement('span');
+      arrow.className = 'diff-arrow';
+      arrow.textContent = '→';
+      var es = effectiveStatus(t);
+      var to = document.createElement('span');
+      to.className = 'st-pill ' + STATUS_INFO[es].cls;
+      to.textContent = STATUS_INFO[es].label;
+      li.appendChild(name);
+      li.appendChild(from);
+      li.appendChild(arrow);
+      li.appendChild(to);
+      diffList.appendChild(li);
+    });
+    document.getElementById('report-output-text').value =
+      buildUpdatedReport(document.getElementById('clear-old-bars').checked);
   }
 
   function renderTasks() {
@@ -1940,10 +2260,12 @@
     summaryEl.innerHTML = '';
     listEl.innerHTML = '';
 
+    renderEditBar();
     if (!reportModel) {
       meta.textContent = '';
       toolbar.hidden = true;
       clearBtn.hidden = true;
+      document.getElementById('report-output').hidden = true;
       var empty = document.createElement('div');
       empty.className = 'empty-hint';
       empty.textContent = '週報（.txt）を読み込むか貼り付けると、期限までのタスクを一覧表示します。「<完> -10/20 内容」のように、状態の印と日付が付いた行を読み取ります。';
@@ -1977,28 +2299,49 @@
       summaryEl.appendChild(el);
     });
 
-    document.querySelectorAll('.seg-btn').forEach(function (b) {
+    document.querySelectorAll('.seg-btn[data-view]').forEach(function (b) {
       b.classList.toggle('active', b.getAttribute('data-view') === taskView);
     });
-    document.getElementById('show-done-label').hidden = taskView !== 'due';
+    document.querySelectorAll('.seg-btn[data-filter]').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-filter') === taskFilter);
+    });
+    document.getElementById('show-done-label').hidden = taskView !== 'due' || taskFilter === 'urgent';
     document.getElementById('show-done-tasks').checked = showDoneTasks;
 
     var addedKeys = todayAddedKeys();
+    var urgentOnly = taskFilter === 'urgent';
+    // Tasks whose status was just changed stay visible so a check-off can be seen and undone.
+    var urgentVisible = urgentOnly ? function (t) { return isEdited(t) || isUrgent(t, today); } : null;
 
     if (taskView === 'tree') {
       var tree = document.createElement('div');
       tree.className = 'tree';
-      buildNotes(tree, reportModel.root.notes);
-      reportModel.root.tasks.forEach(function (t) { tree.appendChild(buildTaskRow(t, today, false, addedKeys)); });
-      reportModel.root.children.forEach(function (n) { tree.appendChild(buildTreeNode(n, today, addedKeys)); });
+      if (!urgentOnly) buildNotes(tree, reportModel.root.notes);
+      reportModel.root.tasks.forEach(function (t) {
+        if (!urgentVisible || urgentVisible(t)) tree.appendChild(buildTaskRow(t, today, false, addedKeys));
+      });
+      reportModel.root.children.forEach(function (n) {
+        var el = buildTreeNode(n, today, addedKeys, urgentVisible);
+        if (el) tree.appendChild(el);
+      });
+      if (!tree.childNodes.length) {
+        var noneTree = document.createElement('div');
+        noneTree.className = 'empty-hint';
+        noneTree.textContent = '期限切れ・1週間以内のタスクはありません。';
+        tree.appendChild(noneTree);
+      }
       listEl.appendChild(tree);
       return;
     }
 
-    var list = tasks.filter(function (t) { return showDoneTasks || !isClosed(t); });
+    var list = tasks.filter(function (t) {
+      if (urgentOnly) return urgentVisible(t);
+      return showDoneTasks || !isClosed(t) || isEdited(t);
+    });
     list.sort(function (a, b) {
-      var ca = isClosed(a) ? 1 : 0;
-      var cb = isClosed(b) ? 1 : 0;
+      // Closed tasks sink to the bottom, except ones just checked off in the app (kept in place).
+      var ca = isClosed(a) && !isEdited(a) ? 1 : 0;
+      var cb = isClosed(b) && !isEdited(b) ? 1 : 0;
       if (ca !== cb) return ca - cb;
       var da = taskDue(a);
       var db = taskDue(b);
@@ -2010,7 +2353,7 @@
     if (list.length === 0) {
       var none = document.createElement('div');
       none.className = 'empty-hint';
-      none.textContent = '未完了のタスクはありません。';
+      none.textContent = urgentOnly ? '期限切れ・1週間以内のタスクはありません。' : '未完了のタスクはありません。';
       listEl.appendChild(none);
       return;
     }
@@ -2087,16 +2430,97 @@
     document.getElementById('report-status').textContent = '';
   });
 
-  document.querySelectorAll('.seg-btn').forEach(function (btn) {
+  document.querySelectorAll('.seg-btn[data-view]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       taskView = btn.getAttribute('data-view') === 'tree' ? 'tree' : 'due';
+      save();
+      renderTasks();
+    });
+  });
+
+  document.querySelectorAll('.seg-btn[data-filter]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      taskFilter = btn.getAttribute('data-filter') === 'urgent' ? 'urgent' : 'all';
+      save();
       renderTasks();
     });
   });
 
   document.getElementById('show-done-tasks').addEventListener('change', function (ev) {
     showDoneTasks = ev.target.checked;
+    save();
     renderTasks();
+  });
+
+  var reportOutput = document.getElementById('report-output');
+  var reportOutputStatus = document.getElementById('report-output-status');
+
+  document.getElementById('make-report-btn').addEventListener('click', function () {
+    reportOutput.hidden = false;
+    reportOutputStatus.textContent = '';
+    renderReportOutput();
+    reportOutput.scrollIntoView({ block: 'nearest' });
+  });
+
+  document.getElementById('report-output-close').addEventListener('click', function () {
+    reportOutput.hidden = true;
+  });
+
+  document.getElementById('clear-old-bars').addEventListener('change', function () {
+    renderReportOutput();
+  });
+
+  document.getElementById('revert-edits-btn').addEventListener('click', function () {
+    if (!confirm('アプリ上で変更した状態をすべて取り消し、読み込んだ週報の状態に戻しますか？')) return;
+    report.overrides = {};
+    save();
+    renderAll();
+    if (!reportOutput.hidden) renderReportOutput();
+  });
+
+  document.getElementById('copy-report-btn').addEventListener('click', function () {
+    var ta = document.getElementById('report-output-text');
+    var text = ta.value;
+    function fallback() {
+      ta.focus();
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      reportOutputStatus.textContent = ok ? 'コピーしました。' : 'コピーできませんでした。テキストを選択してコピーしてください。';
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(function () {
+        reportOutputStatus.textContent = 'コピーしました。';
+      }, fallback);
+    } else {
+      fallback();
+    }
+  });
+
+  document.getElementById('download-report-btn').addEventListener('click', function () {
+    var text = document.getElementById('report-output-text').value;
+    var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var d = new Date();
+    var base = (report.sourceName || '週報').replace(/\.[^.]+$/, '').replace(/[\\/:*?"<>|]/g, '_');
+    if (base === '貼り付け') base = '週報';
+    a.href = url;
+    a.download = base + '_' + d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    reportOutputStatus.textContent = 'テキストファイルを保存しました（文字コード: UTF-8）。';
+  });
+
+  document.getElementById('commit-report-btn').addEventListener('click', function () {
+    if (!confirm('この内容を新しい週報として読み込み直します。アプリ上の変更は本文に反映され、変更の記録はリセットされます。よろしいですか？')) return;
+    var text = document.getElementById('report-output-text').value;
+    var name = report.sourceName;
+    if (importReport(text, name)) {
+      document.getElementById('report-status').textContent = '更新した週報を新しい基準として読み込みました。';
+    }
   });
 
   document.getElementById('toggle-view-btn').addEventListener('click', function () {
