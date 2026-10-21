@@ -25,6 +25,11 @@
     --danger-soft: rgba(179,68,44,0.10);
     --live: #D23F3F;
     --live-soft: rgba(210,63,63,0.12);
+    --warn: #9A6200;
+    --warn-soft: rgba(201,138,0,0.14);
+    --overdue: #C62828;
+    --overdue-soft: rgba(198,40,40,0.08);
+    --on-overdue: #FFFFFF;
     --shadow: 0 1px 2px rgba(21,33,27,0.06), 0 8px 24px rgba(21,33,27,0.06);
   }
 
@@ -46,6 +51,11 @@
       --danger-soft: rgba(224,138,115,0.14);
       --live: #FF7A7A;
       --live-soft: rgba(255,122,122,0.16);
+      --warn: #F2C14E;
+      --warn-soft: rgba(242,193,78,0.14);
+      --overdue: #FF7A7A;
+      --overdue-soft: rgba(255,122,122,0.10);
+      --on-overdue: #2A0A0A;
       --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
     }
   }
@@ -66,6 +76,11 @@
     --danger-soft: rgba(224,138,115,0.14);
     --live: #FF7A7A;
     --live-soft: rgba(255,122,122,0.16);
+    --warn: #F2C14E;
+    --warn-soft: rgba(242,193,78,0.14);
+    --overdue: #FF7A7A;
+    --overdue-soft: rgba(255,122,122,0.10);
+    --on-overdue: #2A0A0A;
     --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
   }
 
@@ -383,7 +398,7 @@
     border-radius: 8px;
     overflow: hidden;
   }
-  .format-btn {
+  .format-btn, .seg-btn {
     background: var(--surface);
     color: var(--text-muted);
     border: none;
@@ -393,10 +408,10 @@
     cursor: pointer;
     font-family: 'Zen Kaku Gothic New', sans-serif;
   }
-  .format-btn + .format-btn { border-left: 1px solid var(--border); }
-  .format-btn:hover { background: var(--surface-alt); }
-  .format-btn.active { background: var(--primary); color: var(--on-primary); }
-  .format-btn.active:hover { background: var(--primary); }
+  .format-btn + .format-btn, .seg-btn + .seg-btn { border-left: 1px solid var(--border); }
+  .format-btn:hover, .seg-btn:hover { background: var(--surface-alt); }
+  .format-btn.active, .seg-btn.active { background: var(--primary); color: var(--on-primary); }
+  .format-btn.active:hover, .seg-btn.active:hover { background: var(--primary); }
 
   /* ---------- Day cards ---------- */
   .days { display: flex; flex-direction: column; gap: 14px; }
@@ -540,6 +555,144 @@
     .totals-grid { grid-template-columns: 1fr; }
   }
 
+  /* ---------- Weekly-report tasks ---------- */
+  .tasks-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .tasks-head h2 { margin-bottom: 2px; }
+
+  #report-paste-area { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 4px; }
+  #report-paste-area[hidden] { display: none; }
+  #report-paste-input { width: 100%; font-family: 'Roboto Mono', monospace; font-size: 12px; line-height: 1.5; resize: vertical; }
+
+  #report-status { font-size: 12px; color: var(--primary-strong); min-height: 16px; margin: 6px 0 10px; }
+  #report-status.error { color: var(--danger); }
+
+  .task-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .sum-chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+  .sum-chip b { font-family: 'Roboto Mono', monospace; font-size: 16px; color: var(--text); font-weight: 600; }
+  .sum-chip.is-overdue { background: var(--overdue-soft); border-color: var(--overdue); color: var(--overdue); }
+  .sum-chip.is-overdue b { color: var(--overdue); }
+  .sum-chip.is-today { background: var(--today-soft); border-color: var(--today); color: var(--today); }
+  .sum-chip.is-today b { color: var(--today); }
+  .sum-chip.is-warn { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+  .sum-chip.is-warn b { color: var(--warn); }
+
+  .task-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .task-toolbar[hidden] { display: none; }
+  .check-label { font-size: 12px; color: var(--text-muted); display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .check-label[hidden] { display: none; }
+
+  .task-row {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 4px 12px;
+    align-items: center;
+    padding: 9px 10px 9px 10px;
+    border-bottom: 1px solid var(--border);
+    border-left: 3px solid transparent;
+  }
+  .task-row.u-overdue { border-left-color: var(--overdue); background: var(--overdue-soft); }
+  .task-row.u-today { border-left-color: var(--today); background: var(--today-soft); }
+  .task-row.u-doing { border-left-color: var(--warn); }
+  .task-row.u-none { border-left-color: var(--overdue); border-left-style: dashed; }
+  .task-row.is-closed { opacity: 0.55; }
+  .task-row.is-closed .task-text { text-decoration: line-through; }
+
+  .task-main { min-width: 0; }
+  .task-text { font-size: 13.5px; font-weight: 500; overflow-wrap: anywhere; }
+  .task-path { font-size: 11px; color: var(--text-muted); margin-top: 2px; overflow-wrap: anywhere; }
+  .task-side { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .st-pill {
+    justify-self: start;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .st-done { background: var(--surface-alt); color: var(--text-muted); }
+  .st-doing { background: var(--warn-soft); color: var(--warn); border-color: var(--warn); }
+  .st-todo { color: var(--primary-strong); border-color: var(--primary); }
+  .st-plan { color: var(--text); border-color: var(--text-muted); }
+  .st-hold { color: var(--text-muted); border: 1px dashed var(--text-muted); }
+  .st-none { color: var(--overdue); border: 1px dashed var(--overdue); }
+
+  .due-date { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; }
+  .due { font-size: 11.5px; white-space: nowrap; font-weight: 600; }
+  .due-overdue { background: var(--overdue); color: var(--on-overdue); padding: 3px 8px; border-radius: 6px; }
+  .due-today { background: var(--today); color: var(--on-primary); padding: 3px 8px; border-radius: 6px; }
+  .due-soon { color: var(--today); }
+  .due-later, .due-none { color: var(--text-muted); font-weight: 500; }
+
+  .changed-tag {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: var(--primary-soft);
+    color: var(--primary-strong);
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: 1px;
+  }
+
+  .tree details { border-top: 1px solid var(--border); }
+  .tree > details:first-child { border-top: none; }
+  .tree summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 9px 4px;
+  }
+  .tree summary::-webkit-details-marker { display: none; }
+  .tree summary::before { content: '▸'; color: var(--text-muted); font-size: 11px; transition: transform 0.15s; }
+  .tree details[open] > summary::before { transform: rotate(90deg); }
+  @media (prefers-reduced-motion: reduce) { .tree summary::before { transition: none; } }
+  .node-title { font-weight: 600; }
+  .node-l1 > summary .node-title { font-family: 'Sora', 'Zen Kaku Gothic New', sans-serif; font-size: 14.5px; font-weight: 700; }
+  .node-l2 > summary .node-title { font-size: 13.5px; }
+  .node-l3 > summary .node-title { font-size: 13px; }
+  .node-body { padding-left: 16px; padding-bottom: 6px; }
+  .node-count { font-size: 11px; color: var(--text-muted); }
+  .node-count.has-open { color: var(--primary-strong); font-weight: 600; }
+  .node-count.has-overdue { color: var(--overdue); font-weight: 700; }
+  .node-deadline { font-size: 11px; color: var(--text-muted); border: 1px solid var(--border); border-radius: 6px; padding: 1px 7px; }
+  .node-note { font-size: 12px; color: var(--text-muted); padding: 3px 4px 3px 10px; }
+
+  @media (max-width: 600px) {
+    .task-row { grid-template-columns: auto 1fr; }
+    .task-side { grid-column: 1 / -1; justify-content: flex-start; }
+  }
+
   footer.page-footer {
     text-align: center;
     font-size: 10.5px;
@@ -564,7 +717,7 @@
       </div>
       <div>
         <div class="brand-name">DayTrack</div>
-        <div class="brand-sub">ICSインポート式 スケジュール管理</div>
+        <div class="brand-sub">スケジュール・週報タスク管理</div>
       </div>
     </div>
     <div class="today-chip">
@@ -643,6 +796,37 @@
 
   <div id="days-container" class="days"></div>
 
+  <div class="panel" id="tasks-panel">
+    <div class="tasks-head">
+      <div>
+        <h2>週報タスク <span class="scope-tag" id="report-meta"></span></h2>
+      </div>
+      <div class="row">
+        <label class="btn small" for="report-file" style="cursor:pointer;">週報ファイルを読み込む</label>
+        <input type="file" id="report-file" accept=".txt,.md,.text,text/plain" style="display:none;">
+        <button type="button" class="btn ghost small" id="report-paste-btn">テキストを貼り付け</button>
+        <button type="button" class="btn danger small" id="report-clear-btn">クリア</button>
+      </div>
+    </div>
+    <div id="report-paste-area" hidden>
+      <textarea id="report-paste-input" rows="10" placeholder="週報のテキストをここに貼り付けてください"></textarea>
+      <div class="row">
+        <button type="button" class="btn small" id="report-paste-apply">読み込む</button>
+        <button type="button" class="btn ghost small" id="report-paste-cancel">キャンセル</button>
+      </div>
+    </div>
+    <div id="report-status"></div>
+    <div id="task-summary" class="task-summary"></div>
+    <div class="task-toolbar" id="task-toolbar">
+      <div class="format-toggle" role="group" aria-label="タスクの表示方法">
+        <button type="button" class="seg-btn" data-view="due">期限順</button>
+        <button type="button" class="seg-btn" data-view="tree">週報の構成</button>
+      </div>
+      <label class="check-label" id="show-done-label"><input type="checkbox" id="show-done-tasks"> 完了も表示</label>
+    </div>
+    <div id="task-list"></div>
+  </div>
+
   <div class="totals-grid">
     <div class="panel">
       <h2>内容ごとの合計時間 <span class="scope-tag" id="content-totals-scope"></span></h2>
@@ -679,6 +863,19 @@
   var viewMode = 'today';
   /** 'hm' = "2時間30分"; 'm' = "150分". */
   var timeFormat = 'hm';
+  /** Raw weekly report; tasks are re-parsed from the text so parser fixes apply to old imports. */
+  /** @type {{text:string, sourceName:string, importedAt:string}|null} */
+  var report = null;
+  var reportModel = null;
+  /** 'due' = flat list sorted by deadline; 'tree' = the report's own section structure. */
+  var taskView = 'due';
+  var showDoneTasks = false;
+
+  function sanitizeReport(r) {
+    if (!r || typeof r !== 'object' || typeof r.text !== 'string' || !r.text.trim()) return null;
+    var at = (typeof r.importedAt === 'string' && !isNaN(Date.parse(r.importedAt))) ? r.importedAt : new Date().toISOString();
+    return { text: r.text, sourceName: typeof r.sourceName === 'string' ? r.sourceName : '', importedAt: at };
+  }
 
   function load() {
     try {
@@ -690,6 +887,7 @@
           categories = Array.isArray(parsed.categories) ? parsed.categories : [];
           running = (parsed.running && typeof parsed.running === 'object') ? parsed.running : null;
           timeFormat = (parsed.timeFormat === 'm') ? 'm' : 'hm';
+          report = sanitizeReport(parsed.report);
         } else if (parsed && typeof parsed === 'object') {
           // pre-category flat shape stored under the current key
           schedule = parsed;
@@ -719,7 +917,7 @@
 
   function save() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ days: schedule, categories: categories, running: running, timeFormat: timeFormat }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ days: schedule, categories: categories, running: running, timeFormat: timeFormat, report: report }));
     } catch (e) { /* storage unavailable — edits stay in-memory only for this view */ }
   }
 
@@ -899,6 +1097,252 @@
     return keys.indexOf(tKey) !== -1 ? [tKey] : keys.slice(0, 0);
   }
 
+  // ---------- weekly report parsing ----------
+
+  var STATUS_INFO = {
+    done:  { label: '完了', cls: 'st-done',  closed: true },
+    cancel:{ label: '中止', cls: 'st-hold',  closed: true },
+    doing: { label: '進行中', cls: 'st-doing', closed: false },
+    todo:  { label: '未着手', cls: 'st-todo',  closed: false },
+    plan:  { label: '予定', cls: 'st-plan',  closed: false },
+    hold:  { label: '保留', cls: 'st-hold',  closed: false },
+    none:  { label: '状態未記入', cls: 'st-none', closed: false }
+  };
+
+  var MARKER_STATUS = {
+    '完了': 'done', '完': 'done', '済み': 'done', '済': 'done',
+    '進行中': 'doing', '進行': 'doing', '中': 'doing',
+    '未着手': 'todo', '未': 'todo',
+    '予定': 'plan', '予': 'plan',
+    '保留': 'hold', '保': 'hold',
+    '中止': 'cancel', '止': 'cancel'
+  };
+  var MARKER_RE = /^[<＜\[［【]\s*(完了|済み|進行中|進行|未着手|予定|保留|中止|完|済|中|未|予|保|止)\s*[>＞\]］】]\s*(.*)$/;
+  var DASH = '[-－ー‐−―]';
+  var DATE_PREFIX_RE = new RegExp('^(' + DASH + '?)\\s*(\\d{1,2})/(\\d{1,2})(?!\\d)\\s*(.*)$');
+  var LEADING_DASH_RE = new RegExp('^' + DASH + '\\s*');
+  var NODE_DEADLINE_RE = /[（(]\s*(?:期限|〆切?|締切)?\s*[:：]?\s*(\d{1,2})\/(\d{1,2})\s*(?:まで)?\s*[）)]/;
+
+  // Full-width digits/slash → ASCII, char-for-char, so match indices still line up with the original string.
+  function toHalf(s) {
+    return s.replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
+      .replace(/／/g, '/');
+  }
+
+  // Reports carry month/day only; pick the year that puts the date closest to when the report was loaded.
+  function inferDate(month, day, ref) {
+    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+    var best = null;
+    var bestDiff = Infinity;
+    [ref.getFullYear() - 1, ref.getFullYear(), ref.getFullYear() + 1].forEach(function (y) {
+      var dt = new Date(y, month - 1, day);
+      if (dt.getMonth() !== month - 1) return;
+      var diff = Math.abs(dt.getTime() - ref.getTime());
+      if (diff < bestDiff) { bestDiff = diff; best = dt; }
+    });
+    return best;
+  }
+
+  function parseReport(text, ref) {
+    var root = { level: 0, title: '', deadline: null, notes: [], children: [], tasks: [] };
+    var stack = [root];
+    var tasks = [];
+
+    function current() { return stack[stack.length - 1]; }
+
+    function openNode(level, rawTitle, changed) {
+      while (stack.length > 1 && current().level >= level) stack.pop();
+      var title = rawTitle.trim();
+      var deadline = null;
+      var dm = NODE_DEADLINE_RE.exec(toHalf(title));
+      if (dm) {
+        deadline = inferDate(+dm[1], +dm[2], ref);
+        title = (title.slice(0, dm.index) + title.slice(dm.index + dm[0].length)).trim();
+      }
+      var node = { level: level, title: title, deadline: deadline, changed: changed, notes: [], children: [], tasks: [] };
+      current().children.push(node);
+      stack.push(node);
+    }
+
+    function addTask(status, marker, rest, changed) {
+      var body = rest.trim();
+      var half = toHalf(body);
+      var date = null;
+      var kind = null;
+      var text = body;
+      var dm = DATE_PREFIX_RE.exec(half);
+      if (dm) {
+        date = inferDate(+dm[2], +dm[3], ref);
+        if (date) {
+          kind = dm[1] ? 'by' : 'on';
+          text = body.slice(body.length - dm[4].length);
+        }
+      }
+      if (!date) text = body.replace(LEADING_DASH_RE, '');
+      var inherited = null;
+      for (var i = stack.length - 1; i >= 1; i--) {
+        if (stack[i].deadline) { inherited = stack[i].deadline; break; }
+      }
+      var task = {
+        id: tasks.length,
+        status: status,
+        marker: marker,
+        text: text.trim() || '(内容なし)',
+        date: date,
+        kind: kind,
+        inheritedDue: date ? null : inherited,
+        changed: changed,
+        path: stack.slice(1).map(function (n) { return n.title; })
+      };
+      tasks.push(task);
+      current().tasks.push(task);
+    }
+
+    text.split(/\r\n|\n|\r/).forEach(function (raw) {
+      var line = raw.replace(/\s+$/, '');
+      if (!line.trim()) return;
+      if (/^\s*('''|```|""")\s*$/.test(line)) return;
+
+      // A "|" in the first column is a change bar marking lines updated since the last report.
+      var changed = false;
+      var bar = /^\s*[|｜]/.exec(line);
+      if (bar) { changed = true; line = line.slice(bar[0].length); }
+      var t = line.replace(/^[\s　]+/, '');
+      if (!t) return;
+      var h = toHalf(t);
+      var m;
+
+      if ((m = MARKER_RE.exec(t))) { addTask(MARKER_STATUS[m[1]], m[1], m[2], changed); return; }
+      if ((m = /^(?:[-*・]\s*)?\[([ xX✓]?)\]\s*(.*)$/.exec(t))) { addTask(m[1].trim() ? 'done' : 'todo', m[1].trim() ? '完' : '未', m[2], changed); return; }
+      if ((m = /^[☑✅✔✓]\s*(.*)$/.exec(t))) { addTask('done', '完', m[1], changed); return; }
+      if ((m = /^[☐□]\s*(.*)$/.exec(t))) { addTask('todo', '未', m[1], changed); return; }
+
+      if ((m = /^\d+[.．](?!\d)\s*(.+)$/.exec(h))) { openNode(1, m[1], changed); return; }
+      if ((m = /^[■◆●]\s*(.+)$/.exec(t))) { openNode(1, m[1], changed); return; }
+      if ((m = /^【([^】]+)】\s*$/.exec(t))) { openNode(1, m[1], changed); return; }
+      if ((m = /^[（(]\s*\d+\s*[）)]\s*(.+)$/.exec(h))) { openNode(2, m[1], changed); return; }
+      if ((m = /^[①-⑳]\s*(.+)$/.exec(t))) { openNode(2, m[1], changed); return; }
+      if ((m = /^[+＋]\s*(.+)$/.exec(t))) { openNode(3, m[1], changed); return; }
+
+      if ((m = /^[★☆＊*※]\s*(.*)$/.exec(t))) {
+        if (m[1].trim()) current().notes.push({ mark: t.charAt(0), text: m[1].trim(), changed: changed });
+        return;
+      }
+      // A bullet with no status mark is still a task — surface it as "状態未記入" rather than hiding it.
+      if ((m = /^[-・•]\s*(.+)$/.exec(t))) { addTask('none', '', m[1], changed); return; }
+
+      current().notes.push({ mark: '', text: t, changed: changed });
+    });
+
+    return { root: root, tasks: tasks };
+  }
+
+  function startOfDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+  function dayDiff(due, today) {
+    return Math.round((startOfDay(due).getTime() - startOfDay(today).getTime()) / 86400000);
+  }
+
+  function fmtMD(d) {
+    return (d.getMonth() + 1) + '/' + d.getDate() + '（' + WEEKDAYS_JA[d.getDay()] + '）';
+  }
+
+  function taskDue(task) { return task.date || task.inheritedDue; }
+
+  function isClosed(task) { return STATUS_INFO[task.status].closed; }
+
+  // Urgency only applies to open tasks; closed ones are informational.
+  function taskUrgency(task, today) {
+    if (isClosed(task)) return { key: 'closed', diff: null };
+    var due = taskDue(task);
+    if (!due) return { key: 'none', diff: null };
+    var diff = dayDiff(due, today);
+    if (diff < 0) return { key: 'overdue', diff: diff };
+    if (diff === 0) return { key: 'today', diff: 0 };
+    if (diff <= 7) return { key: 'soon', diff: diff };
+    return { key: 'later', diff: diff };
+  }
+
+  function dueText(task, urg) {
+    var on = task.kind === 'on';
+    var inherited = !task.date && task.inheritedDue;
+    switch (urg.key) {
+      case 'overdue': return (on ? '日付経過 ' : '期限切れ ') + (-urg.diff) + '日';
+      case 'today': return on ? '今日' : (inherited ? '今日が全体期限' : '今日まで');
+      case 'soon':
+      case 'later': return 'あと' + urg.diff + '日' + (on ? '（当日）' : inherited ? '（全体期限）' : '');
+      case 'none': return '期限なし';
+      default: return '';
+    }
+  }
+
+  function taskSummary(tasks, today) {
+    var s = { overdue: 0, today: 0, soon: 0, doing: 0, none: 0, closed: 0, total: tasks.length };
+    tasks.forEach(function (t) {
+      if (isClosed(t)) { s.closed++; return; }
+      var u = taskUrgency(t, today).key;
+      if (u === 'overdue') s.overdue++;
+      else if (u === 'today') s.today++;
+      else if (u === 'soon') s.soon++;
+      if (t.status === 'doing') s.doing++;
+      if (t.status === 'none') s.none++;
+    });
+    return s;
+  }
+
+  function reparseReport() {
+    reportModel = report ? parseReport(report.text, new Date(report.importedAt)) : null;
+  }
+
+  function decodeReportBytes(buf) {
+    var bytes = new Uint8Array(buf);
+    if (bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xFE) return new TextDecoder('utf-16le').decode(bytes);
+    if (bytes.length >= 2 && bytes[0] === 0xFE && bytes[1] === 0xFF) return new TextDecoder('utf-16be').decode(bytes);
+    try {
+      return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch (e) {
+      // Japanese Windows tools still often save .txt as Shift_JIS.
+      try { return new TextDecoder('shift_jis').decode(bytes); } catch (e2) { return new TextDecoder('utf-8').decode(bytes); }
+    }
+  }
+
+  function importReport(text, sourceName) {
+    var statusEl = document.getElementById('report-status');
+    var now = new Date();
+    var model = parseReport(text, now);
+    if (model.tasks.length === 0) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'タスク行が見つかりませんでした。各行の先頭に <完> <中> <未> <予> などの印が付いているか確認してください。';
+      return false;
+    }
+    report = { text: text, sourceName: sourceName, importedAt: now.toISOString() };
+    reportModel = model;
+    save();
+    renderAll();
+    var open = model.tasks.filter(function (t) { return !isClosed(t); }).length;
+    statusEl.className = '';
+    statusEl.textContent = model.tasks.length + ' 件のタスクを読み込みました（未完了 ' + open + ' 件）。';
+    return true;
+  }
+
+  function addTaskToToday(task) {
+    var tKey = todayKey();
+    ensureDate(tKey);
+    var category = task.path[0] || '';
+    var due = taskDue(task);
+    schedule[tKey].push({
+      id: uid(),
+      time: '',
+      minutes: null,
+      content: task.text,
+      category: category,
+      details: task.path.join(' › ') + (due ? '（期限 ' + fmtMD(due) + '）' : '')
+    });
+    if (category) addCategory(category);
+    save();
+    renderAll();
+  }
+
   // ---------- timer ----------
 
   function startTimer(dateKey, entryId) {
@@ -954,6 +1398,10 @@
       note.textContent = '本日の予定 ' + schedule[tKey].length + ' 件';
     } else {
       note.textContent = '本日の予定はまだ登録されていません';
+    }
+    if (reportModel) {
+      var overdue = taskSummary(reportModel.tasks, d).overdue;
+      if (overdue) note.textContent += ' ・ 期限切れタスク ' + overdue + ' 件';
     }
   }
 
@@ -1331,6 +1779,244 @@
     });
   }
 
+  function todayAddedKeys() {
+    var keys = {};
+    (schedule[todayKey()] || []).forEach(function (e) {
+      keys[(e.category || '') + '\u0000' + (e.content || '')] = true;
+    });
+    return keys;
+  }
+
+  function buildTaskRow(task, today, showPath, addedKeys) {
+    var info = STATUS_INFO[task.status];
+    var urg = taskUrgency(task, today);
+    var rowCls = 'task-row';
+    if (info.closed) rowCls += ' is-closed';
+    else if (urg.key === 'overdue') rowCls += ' u-overdue';
+    else if (urg.key === 'today') rowCls += ' u-today';
+    else if (task.status === 'none') rowCls += ' u-none';
+    else if (task.status === 'doing') rowCls += ' u-doing';
+
+    var row = document.createElement('div');
+    row.className = rowCls;
+
+    var pill = document.createElement('span');
+    pill.className = 'st-pill ' + info.cls;
+    pill.textContent = info.label;
+    row.appendChild(pill);
+
+    var main = document.createElement('div');
+    main.className = 'task-main';
+    var textEl = document.createElement('div');
+    textEl.className = 'task-text';
+    textEl.textContent = task.text;
+    if (task.changed) {
+      var tag = document.createElement('span');
+      tag.className = 'changed-tag';
+      tag.textContent = '更新';
+      tag.title = '週報で「|」が付いた行（前回からの更新）';
+      textEl.appendChild(tag);
+    }
+    main.appendChild(textEl);
+    if (showPath && task.path.length) {
+      var pathEl = document.createElement('div');
+      pathEl.className = 'task-path';
+      pathEl.textContent = task.path.join(' › ');
+      main.appendChild(pathEl);
+    }
+    row.appendChild(main);
+
+    var side = document.createElement('div');
+    side.className = 'task-side';
+    var due = taskDue(task);
+    if (due) {
+      var dateEl = document.createElement('span');
+      dateEl.className = 'due-date mono';
+      dateEl.textContent = fmtMD(due);
+      side.appendChild(dateEl);
+    }
+    if (!info.closed) {
+      var dueEl = document.createElement('span');
+      dueEl.className = 'due due-' + urg.key;
+      dueEl.textContent = dueText(task, urg);
+      side.appendChild(dueEl);
+
+      var addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'btn ghost small';
+      if (addedKeys[(task.path[0] || '') + '\u0000' + task.text]) {
+        addBtn.textContent = '今日に追加済み';
+        addBtn.disabled = true;
+      } else {
+        addBtn.textContent = '＋今日の予定へ';
+        addBtn.title = '今日の予定に追加して、タイマーで時間を記録できるようにします';
+        addBtn.addEventListener('click', function () { addTaskToToday(task); });
+      }
+      side.appendChild(addBtn);
+    }
+    row.appendChild(side);
+    return row;
+  }
+
+  function countNode(node, today) {
+    var c = { open: 0, overdue: 0, total: 0 };
+    node.tasks.forEach(function (t) {
+      c.total++;
+      if (!isClosed(t)) {
+        c.open++;
+        if (taskUrgency(t, today).key === 'overdue') c.overdue++;
+      }
+    });
+    node.children.forEach(function (ch) {
+      var cc = countNode(ch, today);
+      c.open += cc.open; c.overdue += cc.overdue; c.total += cc.total;
+    });
+    return c;
+  }
+
+  function buildNotes(container, notes) {
+    notes.forEach(function (n) {
+      var el = document.createElement('div');
+      el.className = 'node-note';
+      el.textContent = (n.mark ? n.mark + ' ' : '') + n.text;
+      if (n.changed) {
+        var tag = document.createElement('span');
+        tag.className = 'changed-tag';
+        tag.textContent = '更新';
+        el.appendChild(tag);
+      }
+      container.appendChild(el);
+    });
+  }
+
+  function buildTreeNode(node, today, addedKeys) {
+    var c = countNode(node, today);
+    var det = document.createElement('details');
+    det.className = 'node-l' + Math.min(node.level, 3);
+    det.open = c.open > 0;
+
+    var sum = document.createElement('summary');
+    var title = document.createElement('span');
+    title.className = 'node-title';
+    title.textContent = node.title;
+    sum.appendChild(title);
+    if (node.changed) {
+      var tag = document.createElement('span');
+      tag.className = 'changed-tag';
+      tag.textContent = '更新';
+      sum.appendChild(tag);
+    }
+    if (node.deadline) {
+      var dl = document.createElement('span');
+      dl.className = 'node-deadline mono';
+      dl.textContent = '期限 ' + fmtMD(node.deadline);
+      sum.appendChild(dl);
+    }
+    if (c.total > 0) {
+      var cnt = document.createElement('span');
+      cnt.className = 'node-count' + (c.overdue ? ' has-overdue' : c.open ? ' has-open' : '');
+      cnt.textContent = c.open
+        ? '残り ' + c.open + ' / ' + c.total + (c.overdue ? '（期限切れ ' + c.overdue + '）' : '')
+        : 'すべて完了（' + c.total + '）';
+      sum.appendChild(cnt);
+    }
+    det.appendChild(sum);
+
+    var body = document.createElement('div');
+    body.className = 'node-body';
+    buildNotes(body, node.notes);
+    node.tasks.forEach(function (t) { body.appendChild(buildTaskRow(t, today, false, addedKeys)); });
+    node.children.forEach(function (ch) { body.appendChild(buildTreeNode(ch, today, addedKeys)); });
+    det.appendChild(body);
+    return det;
+  }
+
+  function renderTasks() {
+    var meta = document.getElementById('report-meta');
+    var summaryEl = document.getElementById('task-summary');
+    var toolbar = document.getElementById('task-toolbar');
+    var listEl = document.getElementById('task-list');
+    var clearBtn = document.getElementById('report-clear-btn');
+    summaryEl.innerHTML = '';
+    listEl.innerHTML = '';
+
+    if (!reportModel) {
+      meta.textContent = '';
+      toolbar.hidden = true;
+      clearBtn.hidden = true;
+      var empty = document.createElement('div');
+      empty.className = 'empty-hint';
+      empty.textContent = '週報（.txt）を読み込むか貼り付けると、期限までのタスクを一覧表示します。「<完> -10/20 内容」のように、状態の印と日付が付いた行を読み取ります。';
+      listEl.appendChild(empty);
+      return;
+    }
+    toolbar.hidden = false;
+    clearBtn.hidden = false;
+
+    var today = new Date();
+    var tasks = reportModel.tasks;
+    var at = new Date(report.importedAt);
+    meta.textContent = '・ ' + (report.sourceName || '週報') + '（' + (at.getMonth() + 1) + '/' + at.getDate() + ' 読込）';
+
+    var s = taskSummary(tasks, today);
+    var chips = [
+      { label: '期限切れ', n: s.overdue, cls: s.overdue ? 'is-overdue' : '' },
+      { label: '今日まで', n: s.today, cls: s.today ? 'is-today' : '' },
+      { label: '7日以内', n: s.soon, cls: '' },
+      { label: '進行中', n: s.doing, cls: s.doing ? 'is-warn' : '' }
+    ];
+    if (s.none) chips.push({ label: '状態未記入', n: s.none, cls: 'is-overdue' });
+    chips.push({ label: '完了', n: s.closed + '/' + s.total, cls: '' });
+    chips.forEach(function (ch) {
+      var el = document.createElement('span');
+      el.className = 'sum-chip' + (ch.cls ? ' ' + ch.cls : '');
+      var num = document.createElement('b');
+      num.textContent = ch.n;
+      el.appendChild(document.createTextNode(ch.label));
+      el.appendChild(num);
+      summaryEl.appendChild(el);
+    });
+
+    document.querySelectorAll('.seg-btn').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-view') === taskView);
+    });
+    document.getElementById('show-done-label').hidden = taskView !== 'due';
+    document.getElementById('show-done-tasks').checked = showDoneTasks;
+
+    var addedKeys = todayAddedKeys();
+
+    if (taskView === 'tree') {
+      var tree = document.createElement('div');
+      tree.className = 'tree';
+      buildNotes(tree, reportModel.root.notes);
+      reportModel.root.tasks.forEach(function (t) { tree.appendChild(buildTaskRow(t, today, false, addedKeys)); });
+      reportModel.root.children.forEach(function (n) { tree.appendChild(buildTreeNode(n, today, addedKeys)); });
+      listEl.appendChild(tree);
+      return;
+    }
+
+    var list = tasks.filter(function (t) { return showDoneTasks || !isClosed(t); });
+    list.sort(function (a, b) {
+      var ca = isClosed(a) ? 1 : 0;
+      var cb = isClosed(b) ? 1 : 0;
+      if (ca !== cb) return ca - cb;
+      var da = taskDue(a);
+      var db = taskDue(b);
+      if (da && db && da.getTime() !== db.getTime()) return da - db;
+      if (da && !db) return -1;
+      if (!da && db) return 1;
+      return a.id - b.id;
+    });
+    if (list.length === 0) {
+      var none = document.createElement('div');
+      none.className = 'empty-hint';
+      none.textContent = '未完了のタスクはありません。';
+      listEl.appendChild(none);
+      return;
+    }
+    list.forEach(function (t) { listEl.appendChild(buildTaskRow(t, today, true, addedKeys)); });
+  }
+
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -1345,9 +2031,73 @@
     renderDays();
     renderTotals();
     renderCategoryChips();
+    renderTasks();
   }
 
   // ---------- events ----------
+
+  document.getElementById('report-file').addEventListener('change', function (ev) {
+    var file = (ev.target.files || [])[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      importReport(decodeReportBytes(reader.result), file.name);
+      ev.target.value = '';
+    };
+    reader.onerror = function () {
+      var statusEl = document.getElementById('report-status');
+      statusEl.className = 'error';
+      statusEl.textContent = 'ファイルの読み込みに失敗しました。';
+      ev.target.value = '';
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  var pasteArea = document.getElementById('report-paste-area');
+  var pasteInput = document.getElementById('report-paste-input');
+
+  document.getElementById('report-paste-btn').addEventListener('click', function () {
+    pasteArea.hidden = !pasteArea.hidden;
+    if (!pasteArea.hidden) pasteInput.focus();
+  });
+
+  document.getElementById('report-paste-cancel').addEventListener('click', function () {
+    pasteArea.hidden = true;
+  });
+
+  document.getElementById('report-paste-apply').addEventListener('click', function () {
+    if (!pasteInput.value.trim()) {
+      var statusEl = document.getElementById('report-status');
+      statusEl.className = 'error';
+      statusEl.textContent = '貼り付けたテキストが空です。';
+      return;
+    }
+    if (importReport(pasteInput.value, '貼り付け')) {
+      pasteInput.value = '';
+      pasteArea.hidden = true;
+    }
+  });
+
+  document.getElementById('report-clear-btn').addEventListener('click', function () {
+    if (!confirm('読み込んだ週報タスクを削除しますか？（今日の予定に追加した項目は残ります）')) return;
+    report = null;
+    reportModel = null;
+    save();
+    renderAll();
+    document.getElementById('report-status').textContent = '';
+  });
+
+  document.querySelectorAll('.seg-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      taskView = btn.getAttribute('data-view') === 'tree' ? 'tree' : 'due';
+      renderTasks();
+    });
+  });
+
+  document.getElementById('show-done-tasks').addEventListener('change', function (ev) {
+    showDoneTasks = ev.target.checked;
+    renderTasks();
+  });
 
   document.getElementById('toggle-view-btn').addEventListener('click', function () {
     viewMode = viewMode === 'today' ? 'all' : 'today';
@@ -1485,16 +2235,20 @@
       });
     }
 
-    return { days: resultDays, categories: resultCategories };
+    // undefined = file predates weekly reports, so keep whatever this browser already has.
+    var resultReport = ('report' in raw) ? sanitizeReport(raw.report) : undefined;
+
+    return { days: resultDays, categories: resultCategories, report: resultReport };
   }
 
   document.getElementById('export-json-btn').addEventListener('click', function () {
     var payload = {
       app: 'daytrack-schedule',
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
       days: schedule,
-      categories: categories
+      categories: categories,
+      report: report
     };
     var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
@@ -1536,6 +2290,10 @@
       }
       schedule = sanitized.days;
       categories = sanitized.categories;
+      if (sanitized.report !== undefined) {
+        report = sanitized.report;
+        reparseReport();
+      }
       running = null;
       viewMode = 'all';
       save();
@@ -1553,6 +2311,7 @@
   });
 
   load();
+  reparseReport();
   renderAll();
 })();
 </script>
