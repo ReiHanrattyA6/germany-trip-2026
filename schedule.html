@@ -991,7 +991,8 @@
         if (/^\d+$/.test(k) && EDITABLE_STATUSES.indexOf(r.overrides[k]) !== -1) overrides[k] = r.overrides[k];
       });
     }
-    return { text: r.text, sourceName: typeof r.sourceName === 'string' ? r.sourceName : '', importedAt: at, overrides: overrides };
+    var encoding = ['utf-8', 'utf-8-bom', 'shift_jis', 'utf-16le', 'utf-16be'].indexOf(r.encoding) !== -1 ? r.encoding : 'utf-8';
+    return { text: r.text, sourceName: typeof r.sourceName === 'string' ? r.sourceName : '', importedAt: at, overrides: overrides, encoding: encoding };
   }
 
   function loadTaskPrefs(p) {
@@ -1243,12 +1244,35 @@
     '保留': 'hold', '保': 'hold',
     '中止': 'cancel', '止': 'cancel'
   };
-  var MARKER_RE = /^([<＜\[［【]\s*)(完了|済み|進行中|進行|未着手|予定|保留|中止|完|済|中|未|予|保|止)(\s*[>＞\]］】])\s*(.*)$/;
-  var CHECKBOX_RE = /^((?:[-*・]\s*)?\[)([ xX✓]?)(\])\s*(.*)$/;
-  var SYMBOL_RE = /^([☑✅✔✓☐□])\s*(.*)$/;
-  // Marker written back into the report when a status is changed in the app.
-  var STATUS_MARK = { done: '完', doing: '中', todo: '未', plan: '予', hold: '保留', cancel: '中止' };
+  // Groups: 1 open bracket, 2 marker/check, 3 close bracket, 4 spacing after it, 5 rest of line.
+  var MARKER_RE = /^([<＜\[［【]\s*)(完了|済み|進行中|進行|未着手|予定|保留|中止|完|済|中|未|予|保|止)(\s*[>＞\]］】])(\s*)(.*)$/;
+  var CHECKBOX_RE = /^((?:[-－*＊・]\s*)?[\[［])([ 　xXｘＸ✓✔]?)([\]］])(\s*)(.*)$/;
+  var SYMBOL_RE = /^([☑✅✔✓☐□])(\s*)(.*)$/;
+  var BULLET_RE = /^[-－‐・•]\s*(.+)$/;
+  var BAR_CHARS = '|｜│┃';
+  var BAR_LEAD_RE = /^(\s*)([|｜│┃])/;
+  // Fallback marker words when the report itself doesn't show which form it uses for a status.
+  var SHORT_MARK = { done: '完', doing: '中', todo: '未', plan: '予', hold: '保留', cancel: '中止' };
+  var LONG_MARK = { done: '完了', doing: '進行中', todo: '未着手', plan: '予定', hold: '保留', cancel: '中止' };
+  var LONG_FORMS = ['完了', '済み', '進行中', '進行', '未着手', '予定'];
+  var SHORT_FORMS = ['完', '済', '中', '未', '予'];
   var EDITABLE_STATUSES = ['done', 'doing', 'todo', 'plan', 'hold', 'cancel'];
+
+  // Display columns in a Japanese monospace font: full-width forms, CJK, and box-drawing take two.
+  function colWidth(c) {
+    return /[ᄀ-ᅟ─-╿⺀-〾぀-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦]/.test(c) || c === '　' ? 2 : 1;
+  }
+
+  function topKey(counts, fallback) {
+    var best = fallback;
+    var n = 0;
+    Object.keys(counts).forEach(function (k) {
+      if (counts[k] > n) { n = counts[k]; best = k; }
+    });
+    return best;
+  }
+
+  function bump(counts, key) { counts[key] = (counts[key] || 0) + 1; }
   var DASH = '[-－ー‐−―]';
   var DATE_PREFIX_RE = new RegExp('^(' + DASH + '?)\\s*(\\d{1,2})/(\\d{1,2})(?!\\d)\\s*(.*)$');
   var LEADING_DASH_RE = new RegExp('^' + DASH + '\\s*');
@@ -1331,6 +1355,13 @@
       current().tasks.push(task);
     }
 
+    // How this report writes things, so text generated from it matches (full/half width, marker words, spacing).
+    var stats = {
+      bar: {}, bracket: {}, sep: {}, form: { long: 0, short: 0 },
+      marker: { done: {}, doing: {}, todo: {}, plan: {}, hold: {}, cancel: {} },
+      checkOn: {}, checkOff: {}, symOn: {}, symOff: {}
+    };
+
     text.split(/\r\n|\n|\r/).forEach(function (raw, lineIndex) {
       var line = raw.replace(/\s+$/, '');
       if (!line.trim()) return;
@@ -1339,28 +1370,36 @@
 
       // A "|" in the first column is a change bar marking lines updated since the last report.
       var changed = false;
-      var bar = /^\s*[|｜]/.exec(line);
-      if (bar) { changed = true; line = line.slice(bar[0].length); }
-      var t = line.replace(/^[\s　]+/, '');
+      var bar = BAR_LEAD_RE.exec(line);
+      if (bar) { changed = true; bump(stats.bar, bar[2]); line = line.slice(bar[0].length); }
+      var t = line.replace(/^\s+/, '');
       if (!t) return;
       var h = toHalf(t);
       var offset = trimmedLen - t.length;
       var m;
 
       if ((m = MARKER_RE.exec(t))) {
-        addTask(MARKER_STATUS[m[2]], m[2], m[4], changed,
+        var st = MARKER_STATUS[m[2]];
+        bump(stats.bracket, m[1] + '\u0000' + m[3]);
+        bump(stats.sep, m[4]);
+        bump(stats.marker[st], m[2]);
+        if (LONG_FORMS.indexOf(m[2]) !== -1) stats.form.long++;
+        else if (SHORT_FORMS.indexOf(m[2]) !== -1) stats.form.short++;
+        addTask(st, m[2], m[5], changed,
           { line: lineIndex, offset: offset, kind: 'angle', open: m[1], close: m[3], len: m[1].length + m[2].length + m[3].length });
         return;
       }
       if ((m = CHECKBOX_RE.exec(t))) {
         var checked = !!m[2].trim();
-        addTask(checked ? 'done' : 'todo', checked ? '完' : '未', m[4], changed,
+        bump(checked ? stats.checkOn : stats.checkOff, m[2]);
+        addTask(checked ? 'done' : 'todo', checked ? '完' : '未', m[5], changed,
           { line: lineIndex, offset: offset, kind: 'check', open: m[1], close: m[3], len: m[1].length + m[2].length + m[3].length });
         return;
       }
       if ((m = SYMBOL_RE.exec(t))) {
         var sym = '☐□'.indexOf(m[1]) === -1;
-        addTask(sym ? 'done' : 'todo', sym ? '完' : '未', m[2], changed,
+        bump(sym ? stats.symOn : stats.symOff, m[1]);
+        addTask(sym ? 'done' : 'todo', sym ? '完' : '未', m[3], changed,
           { line: lineIndex, offset: offset, kind: 'symbol', len: m[1].length });
         return;
       }
@@ -1377,7 +1416,7 @@
         return;
       }
       // A bullet with no status mark is still a task — surface it as "状態未記入" rather than hiding it.
-      if ((m = /^[-・•]\s*(.+)$/.exec(t))) {
+      if ((m = BULLET_RE.exec(t))) {
         addTask('none', '', m[1], changed, { line: lineIndex, offset: offset, kind: 'none', len: 0 });
         return;
       }
@@ -1385,7 +1424,30 @@
       current().notes.push({ mark: '', text: t, changed: changed });
     });
 
-    return { root: root, tasks: tasks };
+    // With no example in the report, lean full-width if the report mostly writes digits/symbols full-width.
+    var fwCount = (text.match(/[０-９＜＞（）［］／－｜＋．]/g) || []).length;
+    var hwCount = (text.match(/[0-9<>()\[\]\/\-|+.]/g) || []).length;
+    var fw = fwCount > hwCount;
+    var bracket = topKey(stats.bracket, (fw ? '＜' : '<') + '\u0000' + (fw ? '＞' : '>')).split('\u0000');
+    var useLong = stats.form.long > stats.form.short;
+    var markerFor = {};
+    EDITABLE_STATUSES.forEach(function (s) {
+      markerFor[s] = topKey(stats.marker[s], useLong ? LONG_MARK[s] : SHORT_MARK[s]);
+    });
+    var style = {
+      fullWidth: fw,
+      bar: topKey(stats.bar, fw ? '｜' : '|'),
+      open: bracket[0],
+      close: bracket[1],
+      sep: topKey(stats.sep, fw ? '　' : ' '),
+      markerFor: markerFor,
+      checkOn: topKey(stats.checkOn, fw ? 'ｘ' : 'x'),
+      checkOff: topKey(stats.checkOff, fw ? '　' : ' '),
+      symOn: topKey(stats.symOn, '☑'),
+      symOff: topKey(stats.symOff, '☐')
+    };
+
+    return { root: root, tasks: tasks, style: style };
   }
 
   function startOfDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
@@ -1424,50 +1486,74 @@
     return reportModel ? reportModel.tasks.filter(isEdited) : [];
   }
 
-  function rewriteTaskLine(line, task, status) {
+  var HALF_TO_FULL_CHECK = { 'x': 'ｘ', 'X': 'Ｘ', ' ': '　' };
+  var FULL_TO_HALF_CHECK = { 'ｘ': 'x', 'Ｘ': 'X', '　': ' ' };
+
+  // Keep a checkbox's mark the same width as that line's own brackets.
+  function checkCharFor(ch, bracketIsFull) {
+    if (bracketIsFull) return HALF_TO_FULL_CHECK[ch] || ch;
+    return FULL_TO_HALF_CHECK[ch] || ch;
+  }
+
+  // Existing markers keep their own brackets/spacing; only the word changes, using the report's own wording.
+  function rewriteTaskLine(line, task, status, style) {
     var mk = task.mark;
     var before = line.slice(0, mk.offset);
     var after = line.slice(mk.offset + mk.len);
-    var angle = '<' + STATUS_MARK[status] + '>';
-    if (mk.kind === 'angle') return before + mk.open + STATUS_MARK[status] + mk.close + after;
+    var word = style.markerFor[status];
+    var angle = style.open + word + style.close;
+    if (mk.kind === 'angle') return before + mk.open + word + mk.close + after;
     if (mk.kind === 'check') {
-      if (status === 'done') return before + mk.open + 'x' + mk.close + after;
-      if (status === 'todo') return before + mk.open + ' ' + mk.close + after;
+      var full = mk.open.slice(-1) === '［';
+      if (status === 'done') return before + mk.open + checkCharFor(style.checkOn, full) + mk.close + after;
+      if (status === 'todo') return before + mk.open + checkCharFor(style.checkOff, full) + mk.close + after;
       return before + angle + after;
     }
     if (mk.kind === 'symbol') {
-      if (status === 'done') return before + '☑' + after;
-      if (status === 'todo') return before + '☐' + after;
+      if (status === 'done') return before + style.symOn + after;
+      if (status === 'todo') return before + style.symOff + after;
       return before + angle + after;
     }
-    return before + angle + ' ' + after;
+    return before + angle + style.sep + after;
   }
 
-  // Change bar replaces the first indent space so column alignment is kept, matching how the report marks edits.
-  function addChangeBar(line) {
-    if (/^[|｜]/.test(line)) return line;
-    if (line.charAt(0) === ' ') return '|' + line.slice(1);
-    if (line.charAt(0) === '　') return '| ' + line.slice(1);
-    return '|' + line;
+  // The bar takes the place of leading indent of the same display width, so columns stay aligned
+  // (half-width "|" over one space, full-width "｜" over one full-width space or two spaces).
+  function addChangeBar(line, bar) {
+    if (BAR_LEAD_RE.test(line)) return line;
+    var need = colWidth(bar);
+    var used = 0;
+    var i = 0;
+    while (i < line.length && used < need && (line[i] === ' ' || line[i] === '　')) {
+      used += colWidth(line[i]);
+      i++;
+    }
+    if (used < need) return bar + line;
+    return bar + new Array(used - need + 1).join(' ') + line.slice(i);
   }
 
   function removeChangeBar(line) {
-    if (line.charAt(0) === '|') return ' ' + line.slice(1);
-    if (line.charAt(0) === '｜') return '  ' + line.slice(1);
-    return line;
+    var m = BAR_LEAD_RE.exec(line);
+    if (!m) return line;
+    var w = colWidth(m[2]);
+    var rest = line.slice(m[0].length);
+    var fill = w === 2 && (rest.charAt(0) === '　' || m[1].indexOf('　') !== -1) ? '　' : new Array(w + 1).join(' ');
+    return m[1] + fill + rest;
   }
 
   function buildUpdatedReport(clearOldBars) {
-    var nl = report.text.indexOf('\r\n') !== -1 ? '\r\n' : '\n';
+    var style = reportModel.style;
+    var nlMatch = /\r\n|\n|\r/.exec(report.text);
+    var nl = nlMatch ? nlMatch[0] : '\n';
     var lines = report.text.split(/\r\n|\n|\r/);
     var changedLines = {};
     reportModel.tasks.forEach(function (t) {
       if (!isEdited(t)) return;
-      lines[t.mark.line] = rewriteTaskLine(lines[t.mark.line], t, effectiveStatus(t));
+      lines[t.mark.line] = rewriteTaskLine(lines[t.mark.line], t, effectiveStatus(t), style);
       changedLines[t.mark.line] = true;
     });
     return lines.map(function (l, i) {
-      if (changedLines[i]) return addChangeBar(l);
+      if (changedLines[i]) return addChangeBar(l, style.bar);
       return clearOldBars ? removeChangeBar(l) : l;
     }).join(nl);
   }
@@ -1515,19 +1601,78 @@
     reportModel = report ? parseReport(report.text, new Date(report.importedAt)) : null;
   }
 
+  var ENCODING_LABEL = {
+    'utf-8': 'UTF-8', 'utf-8-bom': 'UTF-8（BOM付き）', 'shift_jis': 'Shift_JIS',
+    'utf-16le': 'UTF-16', 'utf-16be': 'UTF-16BE'
+  };
+
   function decodeReportBytes(buf) {
     var bytes = new Uint8Array(buf);
-    if (bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xFE) return new TextDecoder('utf-16le').decode(bytes);
-    if (bytes.length >= 2 && bytes[0] === 0xFE && bytes[1] === 0xFF) return new TextDecoder('utf-16be').decode(bytes);
+    if (bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xFE) return { text: new TextDecoder('utf-16le').decode(bytes), encoding: 'utf-16le' };
+    if (bytes.length >= 2 && bytes[0] === 0xFE && bytes[1] === 0xFF) return { text: new TextDecoder('utf-16be').decode(bytes), encoding: 'utf-16be' };
+    var bom = bytes.length >= 3 && bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF;
     try {
-      return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      return { text: new TextDecoder('utf-8', { fatal: true }).decode(bytes), encoding: bom ? 'utf-8-bom' : 'utf-8' };
     } catch (e) {
       // Japanese Windows tools still often save .txt as Shift_JIS.
-      try { return new TextDecoder('shift_jis').decode(bytes); } catch (e2) { return new TextDecoder('utf-8').decode(bytes); }
+      try { return { text: new TextDecoder('shift_jis').decode(bytes), encoding: 'shift_jis' }; }
+      catch (e2) { return { text: new TextDecoder('utf-8').decode(bytes), encoding: 'utf-8' }; }
     }
   }
 
-  function importReport(text, sourceName) {
+  // Browsers only encode UTF-8 natively, so build a Shift_JIS (Windows-31J) table by decoding every
+  // double-byte code once; the first code seen for a character wins.
+  var sjisTable = null;
+  function getSjisTable() {
+    if (sjisTable) return sjisTable;
+    sjisTable = new Map();
+    var dec = new TextDecoder('shift_jis');
+    var pair = new Uint8Array(2);
+    for (var lead = 0x81; lead <= 0xFC; lead++) {
+      if (lead >= 0xA0 && lead <= 0xDF) continue;
+      for (var trail = 0x40; trail <= 0xFC; trail++) {
+        if (trail === 0x7F) continue;
+        pair[0] = lead;
+        pair[1] = trail;
+        var s = dec.decode(pair);
+        if (s.length === 1 && s !== '�' && !sjisTable.has(s)) sjisTable.set(s, (lead << 8) | trail);
+      }
+    }
+    return sjisTable;
+  }
+
+  function encodeReport(text, encoding) {
+    var out = [];
+    var unmapped = 0;
+    if (encoding === 'shift_jis') {
+      var table = getSjisTable();
+      for (var ch of text) {
+        var c = ch.codePointAt(0);
+        if (c < 0x80) out.push(c);
+        else if (c >= 0xFF61 && c <= 0xFF9F) out.push(c - 0xFF61 + 0xA1);
+        else if (table.has(ch)) { var b = table.get(ch); out.push(b >> 8, b & 0xFF); }
+        else { out.push(0x3F); unmapped++; }
+      }
+      return { bytes: new Uint8Array(out), unmapped: unmapped };
+    }
+    if (encoding === 'utf-16le' || encoding === 'utf-16be') {
+      var le = encoding === 'utf-16le';
+      out.push(le ? 0xFF : 0xFE, le ? 0xFE : 0xFF);
+      for (var i = 0; i < text.length; i++) {
+        var u = text.charCodeAt(i);
+        if (le) out.push(u & 0xFF, u >> 8); else out.push(u >> 8, u & 0xFF);
+      }
+      return { bytes: new Uint8Array(out), unmapped: 0 };
+    }
+    var utf8 = new TextEncoder().encode(text);
+    if (encoding !== 'utf-8-bom') return { bytes: utf8, unmapped: 0 };
+    var withBom = new Uint8Array(utf8.length + 3);
+    withBom.set([0xEF, 0xBB, 0xBF]);
+    withBom.set(utf8, 3);
+    return { bytes: withBom, unmapped: 0 };
+  }
+
+  function importReport(text, sourceName, encoding) {
     var statusEl = document.getElementById('report-status');
     var now = new Date();
     var model = parseReport(text, now);
@@ -1536,7 +1681,7 @@
       statusEl.textContent = 'タスク行が見つかりませんでした。各行の先頭に <完> <中> <未> <予> などの印が付いているか確認してください。';
       return false;
     }
-    report = { text: text, sourceName: sourceName, importedAt: now.toISOString(), overrides: {} };
+    report = { text: text, sourceName: sourceName, importedAt: now.toISOString(), overrides: {}, encoding: encoding || 'utf-8' };
     document.getElementById('report-output').hidden = true;
     reportModel = model;
     save();
@@ -2218,6 +2363,8 @@
     document.getElementById('revert-edits-btn').hidden = n === 0;
   }
 
+  var lastReportText = '';
+
   function renderReportOutput() {
     var diffList = document.getElementById('diff-list');
     diffList.innerHTML = '';
@@ -2247,8 +2394,9 @@
       li.appendChild(to);
       diffList.appendChild(li);
     });
-    document.getElementById('report-output-text').value =
-      buildUpdatedReport(document.getElementById('clear-old-bars').checked);
+    // Kept separately: a textarea normalizes CRLF to LF, which would break the report's own line endings.
+    lastReportText = buildUpdatedReport(document.getElementById('clear-old-bars').checked);
+    document.getElementById('report-output-text').value = lastReportText;
   }
 
   function renderTasks() {
@@ -2278,7 +2426,8 @@
     var today = new Date();
     var tasks = reportModel.tasks;
     var at = new Date(report.importedAt);
-    meta.textContent = '・ ' + (report.sourceName || '週報') + '（' + (at.getMonth() + 1) + '/' + at.getDate() + ' 読込）';
+    meta.textContent = '・ ' + (report.sourceName || '週報') + '（' + (at.getMonth() + 1) + '/' + at.getDate() + ' 読込'
+      + (report.sourceName !== '貼り付け' ? '・' + ENCODING_LABEL[report.encoding] : '') + '）';
 
     var s = taskSummary(tasks, today);
     var chips = [
@@ -2384,7 +2533,8 @@
     if (!file) return;
     var reader = new FileReader();
     reader.onload = function () {
-      importReport(decodeReportBytes(reader.result), file.name);
+      var decoded = decodeReportBytes(reader.result);
+      importReport(decoded.text, file.name, decoded.encoding);
       ev.target.value = '';
     };
     reader.onerror = function () {
@@ -2415,7 +2565,7 @@
       statusEl.textContent = '貼り付けたテキストが空です。';
       return;
     }
-    if (importReport(pasteInput.value, '貼り付け')) {
+    if (importReport(pasteInput.value, '貼り付け', 'utf-8')) {
       pasteInput.value = '';
       pasteArea.hidden = true;
     }
@@ -2480,7 +2630,7 @@
 
   document.getElementById('copy-report-btn').addEventListener('click', function () {
     var ta = document.getElementById('report-output-text');
-    var text = ta.value;
+    var text = lastReportText;
     function fallback() {
       ta.focus();
       ta.select();
@@ -2498,8 +2648,9 @@
   });
 
   document.getElementById('download-report-btn').addEventListener('click', function () {
-    var text = document.getElementById('report-output-text').value;
-    var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    var encoding = report.encoding || 'utf-8';
+    var encoded = encodeReport(lastReportText, encoding);
+    var blob = new Blob([encoded.bytes], { type: 'text/plain' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     var d = new Date();
@@ -2511,14 +2662,16 @@
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    reportOutputStatus.textContent = 'テキストファイルを保存しました（文字コード: UTF-8）。';
+    var nl = /\r\n/.test(lastReportText) ? 'CRLF' : 'LF';
+    reportOutputStatus.textContent = 'テキストファイルを保存しました（文字コード: ' + ENCODING_LABEL[encoding] + '・改行: ' + nl
+      + (report.sourceName === '貼り付け' ? '' : '／読み込んだ週報と同じ') + '）。'
+      + (encoded.unmapped ? ' ※Shift_JISで表せない文字 ' + encoded.unmapped + ' 個を「?」に置き換えました。' : '');
   });
 
   document.getElementById('commit-report-btn').addEventListener('click', function () {
     if (!confirm('この内容を新しい週報として読み込み直します。アプリ上の変更は本文に反映され、変更の記録はリセットされます。よろしいですか？')) return;
-    var text = document.getElementById('report-output-text').value;
     var name = report.sourceName;
-    if (importReport(text, name)) {
+    if (importReport(lastReportText, name, report.encoding)) {
       document.getElementById('report-status').textContent = '更新した週報を新しい基準として読み込みました。';
     }
   });
