@@ -555,6 +555,149 @@
     .totals-grid { grid-template-columns: 1fr; }
   }
 
+  /* ---------- Work hours ---------- */
+  .work-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .work-head h2 { margin-bottom: 0; }
+  .month-nav { display: flex; align-items: center; gap: 6px; }
+  .month-label { font-family: 'Sora', 'Zen Kaku Gothic New', sans-serif; font-weight: 600; font-size: 14px; min-width: 96px; text-align: center; }
+
+  .work-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .work-tile {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .work-tile.is-key { border-color: var(--primary); background: var(--primary-soft); }
+  .work-tile .wt-label { font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
+  .work-tile .wt-value { font-family: 'Sora', 'Roboto Mono', 'Zen Kaku Gothic New', sans-serif; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.25; }
+  .work-tile .wt-value small { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+  .work-tile .wt-sub { font-size: 11.5px; color: var(--text-muted); line-height: 1.5; }
+  .work-tile .pos { color: var(--primary-strong); }
+  .work-tile .neg { color: var(--overdue); }
+  .wt-bar { height: 6px; border-radius: 999px; background: var(--surface-alt); overflow: hidden; margin-top: 4px; }
+  .wt-bar > span { display: block; height: 100%; background: var(--primary); border-radius: 999px; }
+
+  .work-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 18px;
+    margin-bottom: 8px;
+  }
+  .work-grid > * { min-width: 0; }
+  @media (max-width: 760px) {
+    .work-grid { grid-template-columns: minmax(0, 1fr); }
+  }
+  .work-grid h3, .work-more summary, .work-settings summary {
+    font-family: 'Sora', 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .work-grid .hint { font-size: 11.5px; color: var(--text-muted); margin-bottom: 8px; }
+
+  .cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .cal-dow { font-size: 10.5px; color: var(--text-muted); text-align: center; font-weight: 600; padding-bottom: 2px; }
+  .cal-dow.sun { color: var(--overdue); }
+  .cal-day {
+    min-height: 54px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    padding: 4px 5px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    color: var(--text);
+    min-width: 0;
+  }
+  .cal-day:hover { border-color: var(--primary); }
+  .cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+  .cal-day.is-off { background: var(--surface-alt); color: var(--text-muted); }
+  .cal-day.is-today { border-color: var(--today); box-shadow: 0 0 0 1px var(--today); }
+  .cal-day .cd-num { font-size: 12px; font-weight: 700; font-family: 'Roboto Mono', monospace; display: flex; justify-content: space-between; align-items: baseline; gap: 2px; }
+  .cal-day.is-holiday .cd-num, .cal-day.is-sun .cd-num { color: var(--overdue); }
+  .cal-day .cd-tag { font-size: 9px; font-weight: 700; color: var(--warn); font-family: 'Zen Kaku Gothic New', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cal-day .cd-act { font-size: 10.5px; font-family: 'Roboto Mono', monospace; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cal-day .cd-act.met { color: var(--primary-strong); font-weight: 600; }
+  .cal-day .cd-act.short { color: var(--overdue); font-weight: 600; }
+  .cal-blank { min-height: 54px; }
+  .cal-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 10.5px; color: var(--text-muted); margin-top: 8px; }
+
+  table.work-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.work-table th {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    text-align: right;
+    font-weight: 600;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  table.work-table th:first-child, table.work-table td:first-child { text-align: left; }
+  table.work-table td {
+    padding: 7px 8px;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    font-family: 'Roboto Mono', 'Zen Kaku Gothic New', monospace;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  table.work-table td:first-child { font-family: 'Zen Kaku Gothic New', sans-serif; }
+  table.work-table tr.is-current td { background: var(--today-soft); }
+  table.work-table tr.is-total td { font-weight: 700; border-bottom: none; }
+  table.work-table tr.clickable { cursor: pointer; }
+  table.work-table tr.clickable:hover td { background: var(--surface-alt); }
+  table.work-table .pos { color: var(--primary-strong); }
+  table.work-table .neg { color: var(--overdue); }
+
+  .work-more, .work-settings { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 12px; }
+  .work-more summary, .work-settings summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px; margin-bottom: 0; }
+  .work-more summary::-webkit-details-marker, .work-settings summary::-webkit-details-marker { display: none; }
+  .work-more summary::before, .work-settings summary::before { content: '▸'; color: var(--text-muted); font-size: 11px; transition: transform 0.15s; }
+  .work-more[open] summary::before, .work-settings[open] summary::before { transform: rotate(90deg); }
+  @media (prefers-reduced-motion: reduce) { .work-more summary::before, .work-settings summary::before { transition: none; } }
+  .work-more[open] summary, .work-settings[open] summary { margin-bottom: 10px; }
+
+  .settings-grid { display: grid; gap: 14px; }
+  .setting-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; }
+  .setting-row > .setting-label { min-width: 132px; color: var(--text-muted); font-weight: 600; font-size: 12px; }
+  .setting-row input[type="number"] { width: 64px; }
+  .dow-picks { display: flex; gap: 4px; flex-wrap: wrap; }
+  .dow-pick { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--border); border-radius: 7px; padding: 4px 8px; cursor: pointer; font-size: 12px; }
+  .dow-pick:has(input:checked) { border-color: var(--primary); background: var(--primary-soft); }
+  select.st-select-plain {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 7px;
+    padding: 6px 8px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+  }
+  .exc-list { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+  .exc-item { display: flex; align-items: center; gap: 10px; font-size: 12.5px; }
+  .exc-item .mono { min-width: 120px; }
+  .exc-item .exc-kind { color: var(--text-muted); min-width: 110px; }
+
   /* ---------- Weekly-report tasks ---------- */
   .tasks-head {
     display: flex;
@@ -817,6 +960,72 @@
     <button class="btn small" id="running-bar-stop">■ 終了</button>
   </div>
 
+  <div class="panel" id="work-panel">
+    <div class="work-head">
+      <h2>勤務時間</h2>
+      <div class="month-nav">
+        <button type="button" class="btn ghost small" id="work-prev" aria-label="前の月">◀</button>
+        <span class="month-label" id="work-month-label"></span>
+        <button type="button" class="btn ghost small" id="work-next" aria-label="次の月">▶</button>
+        <button type="button" class="btn ghost small" id="work-this">今月</button>
+      </div>
+    </div>
+    <div class="work-tiles" id="work-tiles"></div>
+    <div class="work-grid">
+      <div>
+        <h3>カレンダー</h3>
+        <div class="hint">日付をクリックすると勤務日⇄休みを切り替えられます。半休などは下の設定から。</div>
+        <div id="work-calendar"></div>
+      </div>
+      <div>
+        <h3>週ごとの合計</h3>
+        <div class="hint">この月に含まれる日だけで集計しています。</div>
+        <div class="table-scroll" id="work-weeks"></div>
+      </div>
+    </div>
+    <details class="work-more" id="work-months-details">
+      <summary>月ごとの合計</summary>
+      <div class="table-scroll" id="work-months"></div>
+    </details>
+    <details class="work-settings">
+      <summary>勤務条件の設定</summary>
+      <div class="settings-grid">
+        <div class="setting-row">
+          <span class="setting-label">1日の所定労働時間</span>
+          <input type="number" id="work-hours" min="0" max="24" step="1"> 時間
+          <input type="number" id="work-mins" min="0" max="59" step="5"> 分
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">勤務曜日</span>
+          <div class="dow-picks" id="work-dows"></div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">祝日</span>
+          <label class="check-label"><input type="checkbox" id="work-holidays"> 日本の祝日（振替休日を含む）を休みにする</label>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">週の始まり</span>
+          <select id="work-week-start" class="st-select-plain">
+            <option value="1">月曜日</option>
+            <option value="0">日曜日</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">日ごとの個別設定</span>
+          <input type="date" id="exc-date">
+          <input type="number" id="exc-hours" min="0" max="24" step="0.25" placeholder="時間"> 時間
+          <button type="button" class="btn small" id="exc-add">設定</button>
+          <span class="hint" style="margin:0;">有給・休み＝0、半休＝4 など。休日出勤は勤務時間を入力。</span>
+          <div class="exc-list" id="exc-list"></div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">集計に含める業務種別</span>
+          <div class="dow-picks" id="work-cats"></div>
+        </div>
+      </div>
+    </details>
+  </div>
+
   <div class="controls">
     <div class="panel">
       <h2>ICSをインポート</h2>
@@ -982,6 +1191,34 @@
   var taskFilter = 'all';
   var showDoneTasks = false;
 
+  /** Work-hour rules. exceptions: per-date required minutes overriding the weekday/holiday default (0 = day off). */
+  function defaultWork() {
+    return { minutesPerDay: 480, weekdays: [1, 2, 3, 4, 5], useHolidays: true, weekStart: 1, exceptions: {}, excluded: [] };
+  }
+  var work = defaultWork();
+  /** First day of the month shown in the work panel; not persisted, so it reopens on the current month. */
+  var workMonth = null;
+
+  function sanitizeWork(w) {
+    var d = defaultWork();
+    if (!w || typeof w !== 'object') return d;
+    var mpd = Number(w.minutesPerDay);
+    if (isFinite(mpd) && mpd >= 0 && mpd <= 1440) d.minutesPerDay = Math.round(mpd);
+    if (Array.isArray(w.weekdays)) {
+      d.weekdays = w.weekdays.filter(function (n) { return n === Math.floor(n) && n >= 0 && n <= 6; });
+    }
+    if (typeof w.useHolidays === 'boolean') d.useHolidays = w.useHolidays;
+    if (w.weekStart === 0 || w.weekStart === 1) d.weekStart = w.weekStart;
+    if (w.exceptions && typeof w.exceptions === 'object') {
+      Object.keys(w.exceptions).forEach(function (k) {
+        var v = Number(w.exceptions[k]);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(k) && isFinite(v) && v >= 0 && v <= 1440) d.exceptions[k] = Math.round(v);
+      });
+    }
+    if (Array.isArray(w.excluded)) d.excluded = w.excluded.filter(function (s) { return typeof s === 'string'; });
+    return d;
+  }
+
   function sanitizeReport(r) {
     if (!r || typeof r !== 'object' || typeof r.text !== 'string' || !r.text.trim()) return null;
     var at = (typeof r.importedAt === 'string' && !isNaN(Date.parse(r.importedAt))) ? r.importedAt : new Date().toISOString();
@@ -1014,6 +1251,7 @@
           timeFormat = (parsed.timeFormat === 'm') ? 'm' : 'hm';
           report = sanitizeReport(parsed.report);
           loadTaskPrefs(parsed.taskPrefs);
+          work = sanitizeWork(parsed.work);
         } else if (parsed && typeof parsed === 'object') {
           // pre-category flat shape stored under the current key
           schedule = parsed;
@@ -1044,7 +1282,7 @@
   function save() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ days: schedule, categories: categories, running: running, timeFormat: timeFormat, report: report,
-        taskPrefs: { view: taskView, filter: taskFilter, showDone: showDoneTasks } }));
+        taskPrefs: { view: taskView, filter: taskFilter, showDone: showDoneTasks }, work: work }));
     } catch (e) { /* storage unavailable — edits stay in-memory only for this view */ }
   }
 
@@ -1223,6 +1461,111 @@
     var tKey = todayKey();
     return keys.indexOf(tKey) !== -1 ? [tKey] : keys.slice(0, 0);
   }
+
+  // ---------- work hours ----------
+
+  function keyOf(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+
+  function nthMonday(y, month, n) {
+    var dow = new Date(y, month - 1, 1).getDay();
+    return 1 + ((8 - dow) % 7) + (n - 1) * 7;
+  }
+
+  // Japanese national holidays under the current law (equinox formula valid 1980–2099).
+  // Years with special one-off moves (e.g. 2020–2021 Olympics) are not reproduced.
+  var holidayCache = {};
+  function jpHolidays(y) {
+    if (holidayCache[y]) return holidayCache[y];
+    var h = {};
+    function add(m, d, name) { h[keyOf(new Date(y, m - 1, d))] = name; }
+    var t = y - 1980;
+    add(1, 1, '元日');
+    add(1, nthMonday(y, 1, 2), '成人の日');
+    add(2, 11, '建国記念の日');
+    if (y >= 2020) add(2, 23, '天皇誕生日');
+    add(3, Math.floor(20.8431 + 0.242194 * t - Math.floor(t / 4)), '春分の日');
+    add(4, 29, '昭和の日');
+    add(5, 3, '憲法記念日');
+    add(5, 4, 'みどりの日');
+    add(5, 5, 'こどもの日');
+    add(7, nthMonday(y, 7, 3), '海の日');
+    if (y >= 2016) add(8, 11, '山の日');
+    add(9, nthMonday(y, 9, 3), '敬老の日');
+    add(9, Math.floor(23.2488 + 0.242194 * t - Math.floor(t / 4)), '秋分の日');
+    add(10, nthMonday(y, 10, 2), 'スポーツの日');
+    add(11, 3, '文化の日');
+    add(11, 23, '勤労感謝の日');
+
+    // 国民の休日: a day sandwiched between two holidays.
+    var base = Object.keys(h);
+    base.forEach(function (k) {
+      var p = k.split('-').map(Number);
+      var d = new Date(p[0], p[1] - 1, p[2]);
+      var mid = keyOf(addDays(d, 1));
+      if (!h[mid] && h[keyOf(addDays(d, 2))] && addDays(d, 1).getDay() !== 0) h[mid] = '国民の休日';
+    });
+    // 振替休日: a holiday on Sunday moves to the next day that isn't already a holiday.
+    Object.keys(h).forEach(function (k) {
+      var p = k.split('-').map(Number);
+      var d = new Date(p[0], p[1] - 1, p[2]);
+      if (d.getDay() !== 0 || h[k] === '振替休日') return;
+      var n = addDays(d, 1);
+      while (h[keyOf(n)]) n = addDays(n, 1);
+      h[keyOf(n)] = '振替休日';
+    });
+    holidayCache[y] = h;
+    return h;
+  }
+
+  function holidayName(d) { return jpHolidays(d.getFullYear())[keyOf(d)] || ''; }
+
+  function defaultRequired(d) {
+    if (work.weekdays.indexOf(d.getDay()) === -1) return 0;
+    if (work.useHolidays && holidayName(d)) return 0;
+    return work.minutesPerDay;
+  }
+
+  function requiredMinutes(d) {
+    var k = keyOf(d);
+    return Object.prototype.hasOwnProperty.call(work.exceptions, k) ? work.exceptions[k] : defaultRequired(d);
+  }
+
+  function countsTowardWork(entry) {
+    var c = (entry.category || '').trim().toLowerCase();
+    return !work.excluded.some(function (x) { return x.trim().toLowerCase() === c; });
+  }
+
+  function actualMinutes(k) {
+    return (schedule[k] || []).reduce(function (s, e) { return countsTowardWork(e) ? s + (e.minutes || 0) : s; }, 0);
+  }
+
+  // Totals for start..end (inclusive), split at today so "so far" and "remaining" can be shown.
+  function periodStats(start, end, today) {
+    var s = { required: 0, actual: 0, workDays: 0, reqBefore: 0, actBefore: 0, remainingDays: 0 };
+    var t0 = startOfDay(today).getTime();
+    for (var d = start; d.getTime() <= end.getTime(); d = addDays(d, 1)) {
+      var r = requiredMinutes(d);
+      var a = actualMinutes(keyOf(d));
+      s.required += r;
+      s.actual += a;
+      if (r > 0) s.workDays++;
+      if (d.getTime() < t0) { s.reqBefore += r; s.actBefore += a; }
+      else if (r > 0) s.remainingDays++;
+    }
+    return s;
+  }
+
+  function monthStart(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+  function monthEnd(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0); }
+  function weekStartOf(d) { return addDays(d, -((d.getDay() - work.weekStart + 7) % 7)); }
+
+  function fmtSigned(min) {
+    if (min === 0) return '±0';
+    return (min > 0 ? '+' : '−') + formatMinutes(Math.abs(min));
+  }
+
+  function fmtShortMD(d) { return (d.getMonth() + 1) + '/' + d.getDate(); }
 
   // ---------- weekly report parsing ----------
 
@@ -2091,6 +2434,374 @@
     container.appendChild(grand);
   }
 
+  function workTile(label, valueHtml, subText, opts) {
+    opts = opts || {};
+    var el = document.createElement('div');
+    el.className = 'work-tile' + (opts.key ? ' is-key' : '');
+    var l = document.createElement('div');
+    l.className = 'wt-label';
+    l.textContent = label;
+    var v = document.createElement('div');
+    v.className = 'wt-value' + (opts.tone ? ' ' + opts.tone : '');
+    v.innerHTML = valueHtml;
+    el.appendChild(l);
+    el.appendChild(v);
+    if (subText) {
+      var s = document.createElement('div');
+      s.className = 'wt-sub';
+      s.textContent = subText;
+      el.appendChild(s);
+    }
+    if (typeof opts.progress === 'number') {
+      var bar = document.createElement('div');
+      bar.className = 'wt-bar';
+      var fill = document.createElement('span');
+      fill.style.width = Math.max(0, Math.min(100, opts.progress)) + '%';
+      bar.appendChild(fill);
+      el.appendChild(bar);
+    }
+    return el;
+  }
+
+  function renderWorkTiles(today, mStart, mEnd, isCurrent) {
+    var tiles = document.getElementById('work-tiles');
+    tiles.innerHTML = '';
+    var m = periodStats(mStart, mEnd, today);
+    var pct = m.required ? (m.actual / m.required) * 100 : 0;
+
+    if (!isCurrent) {
+      var future = mStart.getTime() > startOfDay(today).getTime();
+      if (future) {
+        tiles.appendChild(workTile('この月の所定', escapeHtml(formatMinutes(m.required)),
+          '勤務日 ' + m.workDays + '日（祝日・個別設定を反映）', { key: true }));
+        if (m.actual > 0) {
+          tiles.appendChild(workTile('入力済みの予定', escapeHtml(formatMinutes(m.actual)), '', { progress: pct }));
+        }
+        return;
+      }
+      tiles.appendChild(workTile('この月の実績', escapeHtml(formatMinutes(m.actual)),
+        '所定 ' + formatMinutes(m.required) + '（勤務日 ' + m.workDays + '日）', { progress: pct }));
+      if (m.actual === 0) {
+        tiles.appendChild(workTile('月末時点の過不足', '記録なし', 'この月は予定が入力されていません'));
+        return;
+      }
+      var diff = m.actual - m.required;
+      tiles.appendChild(workTile('月末時点の過不足', escapeHtml(fmtSigned(diff)),
+        diff >= 0 ? '所定を満たしていました' : '所定に ' + formatMinutes(-diff) + ' 足りませんでした',
+        { tone: diff >= 0 ? 'pos' : 'neg' }));
+      return;
+    }
+
+    tiles.appendChild(workTile('今月の実績', escapeHtml(formatMinutes(m.actual)),
+      '所定 ' + formatMinutes(m.required) + '（勤務日 ' + m.workDays + '日）', { progress: pct }));
+
+    var need = m.required - m.actual;
+    if (need > 0) {
+      var perDay = m.remainingDays ? Math.ceil(need / m.remainingDays) : 0;
+      tiles.appendChild(workTile('今月あと', escapeHtml(formatMinutes(need)),
+        m.remainingDays
+          ? '残り勤務日 ' + m.remainingDays + '日（今日を含む）・1日あたり ' + formatMinutes(perDay)
+          : '残りの勤務日はありません',
+        { key: true }));
+    } else {
+      tiles.appendChild(workTile('今月あと', '達成', '所定を ' + formatMinutes(-need) + ' 超えています', { key: true, tone: 'pos' }));
+    }
+
+    var pace = m.actBefore - m.reqBefore;
+    tiles.appendChild(workTile('昨日までの過不足', escapeHtml(fmtSigned(pace)),
+      '昨日までの所定 ' + formatMinutes(m.reqBefore) + ' に対し実績 ' + formatMinutes(m.actBefore),
+      { tone: pace >= 0 ? 'pos' : 'neg' }));
+
+    var ws = weekStartOf(today);
+    var we = addDays(ws, 6);
+    var w = periodStats(ws, we, today);
+    var wNeed = w.required - w.actual;
+    tiles.appendChild(workTile('今週（' + fmtShortMD(ws) + '〜' + fmtShortMD(we) + '）',
+      escapeHtml(formatMinutes(w.actual)) + ' <small>/ ' + escapeHtml(formatMinutes(w.required)) + '</small>',
+      wNeed > 0 ? 'あと ' + formatMinutes(wNeed) + '（残り勤務日 ' + w.remainingDays + '日）' : '今週の所定に到達しています',
+      { progress: w.required ? (w.actual / w.required) * 100 : 0 }));
+  }
+
+  function renderWorkCalendar(today, mStart, mEnd) {
+    var host = document.getElementById('work-calendar');
+    host.innerHTML = '';
+    var cal = document.createElement('div');
+    cal.className = 'cal';
+    var names = ['日', '月', '火', '水', '木', '金', '土'];
+    for (var i = 0; i < 7; i++) {
+      var dow = (work.weekStart + i) % 7;
+      var h = document.createElement('div');
+      h.className = 'cal-dow' + (dow === 0 ? ' sun' : '');
+      h.textContent = names[dow];
+      cal.appendChild(h);
+    }
+    var lead = (mStart.getDay() - work.weekStart + 7) % 7;
+    for (var b = 0; b < lead; b++) {
+      var blank = document.createElement('div');
+      blank.className = 'cal-blank';
+      cal.appendChild(blank);
+    }
+    var tKey = keyOf(today);
+    var t0 = startOfDay(today).getTime();
+    for (var d = mStart; d.getTime() <= mEnd.getTime(); d = addDays(d, 1)) {
+      (function (day) {
+        var k = keyOf(day);
+        var req = requiredMinutes(day);
+        var def = defaultRequired(day);
+        var act = actualMinutes(k);
+        var hol = holidayName(day);
+        var hasExc = Object.prototype.hasOwnProperty.call(work.exceptions, k);
+
+        var cell = document.createElement('button');
+        cell.type = 'button';
+        var cls = 'cal-day';
+        if (req === 0) cls += ' is-off';
+        if (hol) cls += ' is-holiday';
+        if (day.getDay() === 0) cls += ' is-sun';
+        if (k === tKey) cls += ' is-today';
+        cell.className = cls;
+
+        var num = document.createElement('div');
+        num.className = 'cd-num';
+        var n = document.createElement('span');
+        n.textContent = day.getDate();
+        num.appendChild(n);
+        var tagText = '';
+        if (hasExc) tagText = req === 0 ? '休' : (def === 0 ? '出' : formatMinutes(req));
+        else if (hol) tagText = '祝';
+        if (tagText) {
+          var tag = document.createElement('span');
+          tag.className = 'cd-tag';
+          tag.textContent = tagText;
+          num.appendChild(tag);
+        }
+        cell.appendChild(num);
+
+        var a = document.createElement('div');
+        a.className = 'cd-act';
+        if (act > 0) {
+          a.textContent = formatMinutes(act);
+          if (req > 0 && day.getTime() < t0) a.className += act >= req ? ' met' : ' short';
+          else if (req > 0 && act >= req) a.className += ' met';
+        } else if (req > 0 && day.getTime() < t0) {
+          a.textContent = '0';
+          a.className += ' short';
+        }
+        cell.appendChild(a);
+
+        var label = (day.getMonth() + 1) + '/' + day.getDate() + '（' + WEEKDAYS_JA[day.getDay()] + '）'
+          + (hol ? ' ' + hol : '') + ' ・ 所定 ' + formatMinutes(req) + ' ・ 実績 ' + formatMinutes(act)
+          + (hasExc ? '（個別設定）' : '') + ' — クリックで' + (hasExc ? '既定に戻す' : (def > 0 ? '休みにする' : '勤務日にする'));
+        cell.title = label;
+        cell.setAttribute('aria-label', label);
+        cell.addEventListener('click', function () {
+          if (hasExc) delete work.exceptions[k];
+          else work.exceptions[k] = def > 0 ? 0 : work.minutesPerDay;
+          save();
+          renderWorkPanel();
+        });
+        cal.appendChild(cell);
+      })(d);
+    }
+    host.appendChild(cal);
+    var legend = document.createElement('div');
+    legend.className = 'cal-legend';
+    legend.textContent = '灰色＝休み ・ 赤字＝日曜・祝日 ・ 休／出／時間＝個別設定 ・ 数字＝その日の実績（緑: 所定以上、赤: 不足）';
+    host.appendChild(legend);
+  }
+
+  function workTable(headers, rows) {
+    var table = document.createElement('table');
+    table.className = 'work-table';
+    var thead = document.createElement('thead');
+    var htr = document.createElement('tr');
+    headers.forEach(function (h) {
+      var th = document.createElement('th');
+      th.textContent = h;
+      htr.appendChild(th);
+    });
+    thead.appendChild(htr);
+    table.appendChild(thead);
+    var tbody = document.createElement('tbody');
+    rows.forEach(function (r) {
+      var tr = document.createElement('tr');
+      if (r.cls) tr.className = r.cls;
+      if (r.onClick) tr.addEventListener('click', r.onClick);
+      r.cells.forEach(function (c) {
+        var td = document.createElement('td');
+        if (c && typeof c === 'object') { td.textContent = c.text; if (c.cls) td.className = c.cls; }
+        else td.textContent = c;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    return table;
+  }
+
+  function diffCell(min) { return { text: fmtSigned(min), cls: min >= 0 ? 'pos' : 'neg' }; }
+
+  function renderWorkWeeks(today, mStart, mEnd) {
+    var host = document.getElementById('work-weeks');
+    host.innerHTML = '';
+    var rows = [];
+    var tKey = keyOf(today);
+    var ws = weekStartOf(mStart);
+    var total = { workDays: 0, required: 0, actual: 0 };
+    while (ws.getTime() <= mEnd.getTime()) {
+      var from = ws.getTime() < mStart.getTime() ? mStart : ws;
+      var we = addDays(ws, 6);
+      var to = we.getTime() > mEnd.getTime() ? mEnd : we;
+      var s = periodStats(from, to, today);
+      total.workDays += s.workDays;
+      total.required += s.required;
+      total.actual += s.actual;
+      var isCur = tKey >= keyOf(from) && tKey <= keyOf(to);
+      rows.push({
+        cls: isCur ? 'is-current' : '',
+        cells: [fmtShortMD(from) + '〜' + fmtShortMD(to), s.workDays + '日', formatMinutes(s.required), formatMinutes(s.actual), diffCell(s.actual - s.required)]
+      });
+      ws = addDays(ws, 7);
+    }
+    rows.push({
+      cls: 'is-total',
+      cells: ['月合計', total.workDays + '日', formatMinutes(total.required), formatMinutes(total.actual), diffCell(total.actual - total.required)]
+    });
+    host.appendChild(workTable(['期間', '勤務日', '所定', '実績', '差分'], rows));
+  }
+
+  function renderWorkMonths(today) {
+    var host = document.getElementById('work-months');
+    host.innerHTML = '';
+    var keys = Object.keys(schedule).filter(function (k) { return actualMinutes(k) > 0; }).sort();
+    var cur = monthStart(today);
+    var first = keys.length ? monthStart(new Date(+keys[0].slice(0, 4), +keys[0].slice(5, 7) - 1, 1)) : cur;
+    var earliest = new Date(cur.getFullYear(), cur.getMonth() - 11, 1);
+    if (first.getTime() < earliest.getTime()) first = earliest;
+    if (first.getTime() > cur.getTime()) first = cur;
+    var rows = [];
+    for (var m = cur; m.getTime() >= first.getTime(); m = new Date(m.getFullYear(), m.getMonth() - 1, 1)) {
+      (function (ms) {
+        var s = periodStats(ms, monthEnd(ms), today);
+        var isCur = ms.getTime() === cur.getTime();
+        var need = s.required - s.actual;
+        rows.push({
+          cls: 'clickable' + (isCur ? ' is-current' : ''),
+          onClick: function () { workMonth = ms; renderWorkPanel(); document.getElementById('work-panel').scrollIntoView({ block: 'start' }); },
+          cells: [
+            ms.getFullYear() + '年' + (ms.getMonth() + 1) + '月' + (isCur ? '（今月）' : ''),
+            s.workDays + '日', formatMinutes(s.required), formatMinutes(s.actual),
+            isCur ? (need > 0 ? { text: 'あと ' + formatMinutes(need), cls: '' } : { text: '達成', cls: 'pos' }) : diffCell(s.actual - s.required)
+          ]
+        });
+      })(m);
+    }
+    host.appendChild(workTable(['月', '勤務日', '所定', '実績', '差分'], rows));
+  }
+
+  function renderWorkSettings() {
+    var hrs = document.getElementById('work-hours');
+    var mins = document.getElementById('work-mins');
+    hrs.value = Math.floor(work.minutesPerDay / 60);
+    mins.value = work.minutesPerDay % 60;
+    document.getElementById('work-holidays').checked = work.useHolidays;
+    document.getElementById('work-week-start').value = String(work.weekStart);
+
+    var dows = document.getElementById('work-dows');
+    dows.innerHTML = '';
+    [1, 2, 3, 4, 5, 6, 0].forEach(function (dow) {
+      var lab = document.createElement('label');
+      lab.className = 'dow-pick';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = work.weekdays.indexOf(dow) !== -1;
+      cb.addEventListener('change', function () {
+        var set = work.weekdays.filter(function (x) { return x !== dow; });
+        if (cb.checked) set.push(dow);
+        work.weekdays = set.sort();
+        save();
+        renderWorkPanel();
+      });
+      lab.appendChild(cb);
+      lab.appendChild(document.createTextNode(WEEKDAYS_JA[dow]));
+      dows.appendChild(lab);
+    });
+
+    var list = document.getElementById('exc-list');
+    list.innerHTML = '';
+    Object.keys(work.exceptions).sort().forEach(function (k) {
+      var p = k.split('-').map(Number);
+      var day = new Date(p[0], p[1] - 1, p[2]);
+      var v = work.exceptions[k];
+      var def = defaultRequired(day);
+      var item = document.createElement('div');
+      item.className = 'exc-item';
+      var dateEl = document.createElement('span');
+      dateEl.className = 'mono';
+      dateEl.textContent = p[0] + '/' + p[1] + '/' + p[2] + '（' + WEEKDAYS_JA[day.getDay()] + '）';
+      var kind = document.createElement('span');
+      kind.className = 'exc-kind';
+      kind.textContent = v === 0 ? '休み' : (def === 0 ? '出勤 ' : '所定 ') + formatMinutes(v);
+      var rm = document.createElement('button');
+      rm.type = 'button';
+      rm.className = 'chip-remove';
+      rm.textContent = '✕';
+      rm.setAttribute('aria-label', dateEl.textContent + 'の個別設定を削除');
+      rm.addEventListener('click', function () {
+        delete work.exceptions[k];
+        save();
+        renderWorkPanel();
+      });
+      item.appendChild(dateEl);
+      item.appendChild(kind);
+      item.appendChild(rm);
+      list.appendChild(item);
+    });
+
+    var cats = document.getElementById('work-cats');
+    cats.innerHTML = '';
+    if (!categories.length) {
+      var none = document.createElement('span');
+      none.className = 'hint';
+      none.style.margin = '0';
+      none.textContent = '業務種別を登録すると、ここで集計から外すものを選べます（例：休憩）。';
+      cats.appendChild(none);
+    }
+    categories.forEach(function (cat) {
+      var lab = document.createElement('label');
+      lab.className = 'dow-pick';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      var lc = cat.trim().toLowerCase();
+      cb.checked = !work.excluded.some(function (x) { return x.trim().toLowerCase() === lc; });
+      cb.addEventListener('change', function () {
+        work.excluded = work.excluded.filter(function (x) { return x.trim().toLowerCase() !== lc; });
+        if (!cb.checked) work.excluded.push(cat);
+        save();
+        renderWorkPanel();
+      });
+      lab.appendChild(cb);
+      lab.appendChild(document.createTextNode(cat));
+      cats.appendChild(lab);
+    });
+  }
+
+  function renderWorkPanel() {
+    var today = new Date();
+    var cur = monthStart(today);
+    if (!workMonth) workMonth = cur;
+    var mStart = workMonth;
+    var mEnd = monthEnd(mStart);
+    var isCurrent = mStart.getTime() === cur.getTime();
+    document.getElementById('work-month-label').textContent = mStart.getFullYear() + '年' + (mStart.getMonth() + 1) + '月';
+    document.getElementById('work-this').hidden = isCurrent;
+    renderWorkTiles(today, mStart, mEnd, isCurrent);
+    renderWorkCalendar(today, mStart, mEnd);
+    renderWorkWeeks(today, mStart, mEnd);
+    renderWorkMonths(today);
+    renderWorkSettings();
+  }
+
   function renderTotals() {
     var dateKeys = visibleDateKeys();
     var entries = [];
@@ -2107,6 +2818,8 @@
 
     var categoryRows = computeGroups(entries, function (e) { return e.category; }, '(未分類)');
     renderTotalsInto(categoryTotalsContainer, categoryRows, 'まだ業務種別が登録されていません。');
+    // Totals change whenever minutes or categories do, so the work-hours panel refreshes alongside.
+    renderWorkPanel();
   }
 
   function renderCategoryChips() {
@@ -2676,6 +3389,51 @@
     }
   });
 
+  function shiftWorkMonth(n) {
+    var base = workMonth || monthStart(new Date());
+    workMonth = new Date(base.getFullYear(), base.getMonth() + n, 1);
+    renderWorkPanel();
+  }
+  document.getElementById('work-prev').addEventListener('click', function () { shiftWorkMonth(-1); });
+  document.getElementById('work-next').addEventListener('click', function () { shiftWorkMonth(1); });
+  document.getElementById('work-this').addEventListener('click', function () {
+    workMonth = monthStart(new Date());
+    renderWorkPanel();
+  });
+
+  function readDailyMinutes() {
+    var h = Math.max(0, Math.min(24, parseInt(document.getElementById('work-hours').value, 10) || 0));
+    var m = Math.max(0, Math.min(59, parseInt(document.getElementById('work-mins').value, 10) || 0));
+    work.minutesPerDay = Math.min(1440, h * 60 + m);
+    save();
+    renderWorkPanel();
+  }
+  document.getElementById('work-hours').addEventListener('change', readDailyMinutes);
+  document.getElementById('work-mins').addEventListener('change', readDailyMinutes);
+
+  document.getElementById('work-holidays').addEventListener('change', function (ev) {
+    work.useHolidays = ev.target.checked;
+    save();
+    renderWorkPanel();
+  });
+
+  document.getElementById('work-week-start').addEventListener('change', function (ev) {
+    work.weekStart = ev.target.value === '0' ? 0 : 1;
+    save();
+    renderWorkPanel();
+  });
+
+  document.getElementById('exc-add').addEventListener('click', function () {
+    var dateVal = document.getElementById('exc-date').value;
+    var hoursVal = document.getElementById('exc-hours').value;
+    if (!dateVal || hoursVal === '') return;
+    var h = Math.max(0, Math.min(24, parseFloat(hoursVal) || 0));
+    work.exceptions[dateVal] = Math.round(h * 60);
+    document.getElementById('exc-hours').value = '';
+    save();
+    renderWorkPanel();
+  });
+
   document.getElementById('toggle-view-btn').addEventListener('click', function () {
     viewMode = viewMode === 'today' ? 'all' : 'today';
     renderAll();
@@ -2815,17 +3573,20 @@
     // undefined = file predates weekly reports, so keep whatever this browser already has.
     var resultReport = ('report' in raw) ? sanitizeReport(raw.report) : undefined;
 
-    return { days: resultDays, categories: resultCategories, report: resultReport };
+    var resultWork = ('work' in raw) ? sanitizeWork(raw.work) : undefined;
+
+    return { days: resultDays, categories: resultCategories, report: resultReport, work: resultWork };
   }
 
   document.getElementById('export-json-btn').addEventListener('click', function () {
     var payload = {
       app: 'daytrack-schedule',
-      version: 3,
+      version: 4,
       exportedAt: new Date().toISOString(),
       days: schedule,
       categories: categories,
-      report: report
+      report: report,
+      work: work
     };
     var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
@@ -2867,6 +3628,7 @@
       }
       schedule = sanitized.days;
       categories = sanitized.categories;
+      if (sanitized.work) work = sanitized.work;
       if (sanitized.report !== undefined) {
         report = sanitized.report;
         reparseReport();
