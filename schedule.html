@@ -192,6 +192,71 @@
     border-left: 1px solid var(--border);
   }
 
+  .work-chip {
+    display: inline-block;
+    text-align: left;
+    line-height: 1.6;
+    border: 1px solid var(--primary);
+    background: var(--primary-soft);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .work-chip:hover { background: var(--surface-alt); }
+  .work-chip b { font-family: 'Roboto Mono', monospace; font-variant-numeric: tabular-nums; }
+  .work-chip .neg { color: var(--overdue); }
+  .work-chip .pos { color: var(--primary-strong); }
+  .work-chip .sep { color: var(--text-muted); }
+
+  .backup-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    border: 1px solid var(--warn);
+    background: var(--warn-soft);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 12.5px;
+  }
+  .backup-bar[hidden] { display: none; }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: calc(100% - 32px);
+    background: var(--text);
+    color: var(--bg);
+    border-radius: 10px;
+    padding: 10px 12px 10px 16px;
+    font-size: 13px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    z-index: 50;
+  }
+  .toast[hidden] { display: none; }
+  .toast-undo {
+    background: none;
+    border: 1px solid currentColor;
+    color: inherit;
+    border-radius: 7px;
+    padding: 4px 10px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    white-space: nowrap;
+  }
+  .toast-close { background: none; border: none; color: inherit; opacity: 0.7; cursor: pointer; font-size: 13px; }
+
   /* ---------- Running timer bar ---------- */
   .running-bar {
     display: flex;
@@ -452,6 +517,18 @@
     font-weight: 700;
   }
 
+  .plan-pill {
+    border: 1px dashed var(--text-muted);
+    color: var(--text-muted);
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+  .day-card.is-future { border-style: dashed; }
+  .day-card.is-future .day-head { background: transparent; }
+
   .day-total { font-size: 12.5px; color: var(--text-muted); }
   .day-total .mono { color: var(--primary-strong); font-weight: 600; }
 
@@ -570,8 +647,8 @@
 
   .work-tiles {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
     margin-bottom: 18px;
   }
   .work-tile {
@@ -587,7 +664,9 @@
   .work-tile .wt-label { font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
   .work-tile .wt-value { font-family: 'Sora', 'Roboto Mono', 'Zen Kaku Gothic New', sans-serif; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.25; }
   .work-tile .wt-value small { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-  .work-tile .wt-sub { font-size: 11.5px; color: var(--text-muted); line-height: 1.5; }
+  .work-tile .wt-sub { font-size: 11.5px; color: var(--text-muted); line-height: 1.5; white-space: pre-line; }
+  .work-tile.is-plan { border-style: dashed; background: transparent; }
+  .work-tile.is-plan .wt-value { color: var(--text-muted); }
   .work-tile .pos { color: var(--primary-strong); }
   .work-tile .neg { color: var(--overdue); }
   .wt-bar { height: 6px; border-radius: 999px; background: var(--surface-alt); overflow: hidden; margin-top: 4px; }
@@ -639,6 +718,7 @@
   .cal-day .cd-act { font-size: 10.5px; font-family: 'Roboto Mono', monospace; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cal-day .cd-act.met { color: var(--primary-strong); font-weight: 600; }
   .cal-day .cd-act.short { color: var(--overdue); font-weight: 600; }
+  .cal-day .cd-act.plan { color: var(--text-muted); font-style: italic; }
   .cal-blank { min-height: 54px; }
   .cal-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 10.5px; color: var(--text-muted); margin-top: 8px; }
 
@@ -668,6 +748,7 @@
   table.work-table tr.clickable:hover td { background: var(--surface-alt); }
   table.work-table .pos { color: var(--primary-strong); }
   table.work-table .neg { color: var(--overdue); }
+  table.work-table .plan { color: var(--text-muted); font-style: italic; }
 
   .work-more, .work-settings { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 12px; }
   .work-more summary, .work-settings summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px; margin-bottom: 0; }
@@ -949,7 +1030,16 @@
       </span>
       <span class="chip-note" id="today-note"></span>
     </div>
+    <button type="button" class="work-chip" id="work-chip" title="勤務時間パネルへ移動"></button>
   </header>
+
+  <div class="backup-bar" id="backup-bar" hidden>
+    <span id="backup-bar-text"></span>
+    <div class="row">
+      <button type="button" class="btn small" id="backup-now">今すぐ書き出す</button>
+      <button type="button" class="btn ghost small" id="backup-later">7日後に通知</button>
+    </div>
+  </div>
 
   <div class="running-bar" id="running-bar" hidden>
     <span class="live-dot" aria-hidden="true"></span>
@@ -968,6 +1058,8 @@
         <span class="month-label" id="work-month-label"></span>
         <button type="button" class="btn ghost small" id="work-next" aria-label="次の月">▶</button>
         <button type="button" class="btn ghost small" id="work-this">今月</button>
+        <button type="button" class="btn ghost small" id="csv-detail-btn" title="表示中の月の予定・実績を1件ずつ出力します">明細CSV</button>
+        <button type="button" class="btn ghost small" id="csv-daily-btn" title="表示中の月の日ごとの所定・実績・差分を出力します">日別CSV</button>
       </div>
     </div>
     <div class="work-tiles" id="work-tiles"></div>
@@ -1045,6 +1137,7 @@
         <input type="file" id="import-json-file" accept=".json,application/json" style="display:none;">
       </div>
       <div id="sync-status"></div>
+      <div class="hint" id="last-export-note" style="margin:6px 0 0;"></div>
     </div>
 
     <div class="panel">
@@ -1162,6 +1255,12 @@
   <datalist id="category-options"></datalist>
 
   <footer class="page-footer">DAYTRACK · SCHEDULE &amp; TIME LOG</footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span id="toast-msg"></span>
+    <button type="button" class="toast-undo" id="toast-undo">元に戻す</button>
+    <button type="button" class="toast-close" id="toast-close" aria-label="閉じる">✕</button>
+  </div>
 </div>
 
 <script>
@@ -1198,6 +1297,10 @@
   var work = defaultWork();
   /** First day of the month shown in the work panel; not persisted, so it reopens on the current month. */
   var workMonth = null;
+  /** Data lives only in this browser, so remind the user to export a backup now and then. */
+  var lastExportAt = null;
+  var backupSnoozeUntil = null;
+  var BACKUP_REMIND_DAYS = 14;
 
   function sanitizeWork(w) {
     var d = defaultWork();
@@ -1252,6 +1355,8 @@
           report = sanitizeReport(parsed.report);
           loadTaskPrefs(parsed.taskPrefs);
           work = sanitizeWork(parsed.work);
+          lastExportAt = typeof parsed.lastExportAt === 'string' && !isNaN(Date.parse(parsed.lastExportAt)) ? parsed.lastExportAt : null;
+          backupSnoozeUntil = typeof parsed.backupSnoozeUntil === 'string' && !isNaN(Date.parse(parsed.backupSnoozeUntil)) ? parsed.backupSnoozeUntil : null;
         } else if (parsed && typeof parsed === 'object') {
           // pre-category flat shape stored under the current key
           schedule = parsed;
@@ -1282,7 +1387,8 @@
   function save() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ days: schedule, categories: categories, running: running, timeFormat: timeFormat, report: report,
-        taskPrefs: { view: taskView, filter: taskFilter, showDone: showDoneTasks }, work: work }));
+        taskPrefs: { view: taskView, filter: taskFilter, showDone: showDoneTasks }, work: work,
+        lastExportAt: lastExportAt, backupSnoozeUntil: backupSnoozeUntil }));
     } catch (e) { /* storage unavailable — edits stay in-memory only for this view */ }
   }
 
@@ -1536,22 +1642,37 @@
     return !work.excluded.some(function (x) { return x.trim().toLowerCase() === c; });
   }
 
-  function actualMinutes(k) {
+  // Minutes logged on a date (entries in excluded categories don't count).
+  function loggedMinutes(k) {
     return (schedule[k] || []).reduce(function (s, e) { return countsTowardWork(e) ? s + (e.minutes || 0) : s; }, 0);
   }
 
-  // Totals for start..end (inclusive), split at today so "so far" and "remaining" can be shown.
+  // Entries dated after today are plans, not work done, so they never count as actual time.
+  function isFutureKey(k) { return k > todayKey(); }
+
+  // Totals for start..end (inclusive), split at today: up to today is actual, after today is planned.
+  // reqToDate is the required time through today (today counted in full).
   function periodStats(start, end, today) {
-    var s = { required: 0, actual: 0, workDays: 0, reqBefore: 0, actBefore: 0, remainingDays: 0 };
+    var s = {
+      required: 0, workDays: 0, reqToDate: 0, actual: 0,
+      planned: 0, reqFuture: 0, futureDays: 0, todayReq: 0, todayAct: 0, started: false
+    };
     var t0 = startOfDay(today).getTime();
     for (var d = start; d.getTime() <= end.getTime(); d = addDays(d, 1)) {
       var r = requiredMinutes(d);
-      var a = actualMinutes(keyOf(d));
+      var m = loggedMinutes(keyOf(d));
       s.required += r;
-      s.actual += a;
       if (r > 0) s.workDays++;
-      if (d.getTime() < t0) { s.reqBefore += r; s.actBefore += a; }
-      else if (r > 0) s.remainingDays++;
+      if (d.getTime() <= t0) {
+        s.started = true;
+        s.reqToDate += r;
+        s.actual += m;
+        if (d.getTime() === t0) { s.todayReq = r; s.todayAct = m; }
+      } else {
+        s.planned += m;
+        s.reqFuture += r;
+        if (r > 0) s.futureDays++;
+      }
     }
     return s;
   }
@@ -2164,8 +2285,9 @@
     }
     var tKey = todayKey();
     keys.forEach(function (dateKey) {
+      var futureDay = dateKey > tKey;
       var card = document.createElement('div');
-      card.className = 'day-card' + (dateKey === tKey ? ' today' : '');
+      card.className = 'day-card' + (dateKey === tKey ? ' today' : '') + (futureDay ? ' is-future' : '');
 
       var head = document.createElement('div');
       head.className = 'day-head';
@@ -2181,15 +2303,25 @@
         pill.textContent = 'Today';
         headLeft.appendChild(pill);
       }
+      if (futureDay) {
+        var planPill = document.createElement('span');
+        planPill.className = 'plan-pill';
+        planPill.textContent = '予定';
+        planPill.title = '明日以降の日付です。実績・勤務時間には含めません。';
+        headLeft.appendChild(planPill);
+      }
       head.appendChild(headLeft);
       var delDateBtn = document.createElement('button');
       delDateBtn.className = 'btn danger small';
       delDateBtn.textContent = 'この日を削除';
       delDateBtn.addEventListener('click', function () {
         if (confirm(formatDateLabel(dateKey) + ' の予定をすべて削除しますか？')) {
+          var snap = snapshotState();
+          if (running && running.dateKey === dateKey) running = null;
           delete schedule[dateKey];
           save();
           renderAll();
+          offerUndo(formatDateLabel(dateKey) + ' を削除しました', snap);
         }
       });
       head.appendChild(delDateBtn);
@@ -2303,7 +2435,10 @@
           } else {
             timerBtn.className = 'btn ghost small timer-btn';
             timerBtn.textContent = '開始';
-            if (running) {
+            if (futureDay) {
+              timerBtn.disabled = true;
+              timerBtn.title = '明日以降の予定はタイマーで記録できません';
+            } else if (running) {
               timerBtn.disabled = true;
               timerBtn.title = '他の予定のタイマーが実行中です';
             } else {
@@ -2340,12 +2475,13 @@
           delBtn.title = '削除';
           delBtn.textContent = '✕';
           delBtn.addEventListener('click', function () {
-            if (isRunningHere) stopTimer();
+            var snap = snapshotState();
+            if (isRunningHere) running = null;
             var idx = schedule[dateKey].findIndex(function (e) { return e.id === entry.id; });
             if (idx !== -1) schedule[dateKey].splice(idx, 1);
             save();
-            renderDays();
-            renderTotals();
+            renderAll();
+            offerUndo('「' + (entry.content || '内容未入力') + '」を削除しました', snap);
           });
           tdDel.appendChild(delBtn);
           tr.appendChild(tdDel);
@@ -2374,7 +2510,7 @@
       var total = document.createElement('div');
       total.className = 'day-total';
       total.id = 'day-total-' + dateKey;
-      total.innerHTML = 'この日の合計: <span class="mono">' + formatMinutes(dayTotalMinutes(dateKey)) + '</span>';
+      total.innerHTML = dayTotalLabel(dateKey);
       footerRow.appendChild(total);
       card.appendChild(footerRow);
 
@@ -2384,7 +2520,12 @@
 
   function renderDayTotalOnly(dateKey) {
     var el = document.getElementById('day-total-' + dateKey);
-    if (el) el.innerHTML = 'この日の合計: <span class="mono">' + formatMinutes(dayTotalMinutes(dateKey)) + '</span>';
+    if (el) el.innerHTML = dayTotalLabel(dateKey);
+  }
+
+  function dayTotalLabel(dateKey) {
+    return (isFutureKey(dateKey) ? 'この日の予定合計: ' : 'この日の合計: ')
+      + '<span class="mono">' + escapeHtml(formatMinutes(dayTotalMinutes(dateKey))) + '</span>';
   }
 
   function computeGroups(entries, keyFn, emptyLabel) {
@@ -2437,7 +2578,7 @@
   function workTile(label, valueHtml, subText, opts) {
     opts = opts || {};
     var el = document.createElement('div');
-    el.className = 'work-tile' + (opts.key ? ' is-key' : '');
+    el.className = 'work-tile' + (opts.key ? ' is-key' : '') + (opts.plan ? ' is-plan' : '');
     var l = document.createElement('div');
     l.className = 'wt-label';
     l.textContent = label;
@@ -2474,9 +2615,9 @@
       if (future) {
         tiles.appendChild(workTile('この月の所定', escapeHtml(formatMinutes(m.required)),
           '勤務日 ' + m.workDays + '日（祝日・個別設定を反映）', { key: true }));
-        if (m.actual > 0) {
-          tiles.appendChild(workTile('入力済みの予定', escapeHtml(formatMinutes(m.actual)), '', { progress: pct }));
-        }
+        tiles.appendChild(workTile('入力済みの予定', escapeHtml(formatMinutes(m.planned)),
+          m.planned ? '予定どおりなら所定との差 ' + fmtSigned(m.planned - m.required) : 'この月の予定はまだありません',
+          { plan: true }));
         return;
       }
       tiles.appendChild(workTile('この月の実績', escapeHtml(formatMinutes(m.actual)),
@@ -2492,34 +2633,51 @@
       return;
     }
 
-    tiles.appendChild(workTile('今月の実績', escapeHtml(formatMinutes(m.actual)),
-      '所定 ' + formatMinutes(m.required) + '（勤務日 ' + m.workDays + '日）', { progress: pct }));
-
+    // Actual = entries dated today or earlier; later entries are only plans.
     var need = m.required - m.actual;
+    var todayOpen = m.todayReq > m.todayAct ? 1 : 0;
+    var remainingDays = m.futureDays + todayOpen;
+    var monthLine = '実績 ' + formatMinutes(m.actual) + ' ／ 月の所定 ' + formatMinutes(m.required) + '（' + m.workDays + '日）';
     if (need > 0) {
-      var perDay = m.remainingDays ? Math.ceil(need / m.remainingDays) : 0;
       tiles.appendChild(workTile('今月あと', escapeHtml(formatMinutes(need)),
-        m.remainingDays
-          ? '残り勤務日 ' + m.remainingDays + '日（今日を含む）・1日あたり ' + formatMinutes(perDay)
-          : '残りの勤務日はありません',
-        { key: true }));
+        monthLine + '\n' + (remainingDays
+          ? '残り勤務日 ' + remainingDays + '日' + (todayOpen ? '（今日を含む）' : '') + '・1日あたり ' + formatMinutes(Math.ceil(need / remainingDays))
+          : '残りの勤務日はありません'),
+        { key: true, progress: pct }));
     } else {
-      tiles.appendChild(workTile('今月あと', '達成', '所定を ' + formatMinutes(-need) + ' 超えています', { key: true, tone: 'pos' }));
+      tiles.appendChild(workTile('今月あと', '達成', monthLine + '\n所定を ' + formatMinutes(-need) + ' 超えています',
+        { key: true, tone: 'pos', progress: pct }));
     }
 
-    var pace = m.actBefore - m.reqBefore;
-    tiles.appendChild(workTile('昨日までの過不足', escapeHtml(fmtSigned(pace)),
-      '昨日までの所定 ' + formatMinutes(m.reqBefore) + ' に対し実績 ' + formatMinutes(m.actBefore),
-      { tone: pace >= 0 ? 'pos' : 'neg' }));
+    var diff = m.actual - m.reqToDate;
+    tiles.appendChild(workTile('今日までの過不足', escapeHtml(fmtSigned(diff)),
+      '今日までの所定 ' + formatMinutes(m.reqToDate) + ' ／ 実績 ' + formatMinutes(m.actual),
+      { tone: diff >= 0 ? 'pos' : 'neg' }));
+
+    if (m.todayReq > 0) {
+      tiles.appendChild(workTile('今日',
+        escapeHtml(formatMinutes(m.todayAct)) + ' <small>/ ' + escapeHtml(formatMinutes(m.todayReq)) + '</small>',
+        m.todayAct >= m.todayReq ? '今日の所定に到達しています' : 'あと ' + formatMinutes(m.todayReq - m.todayAct),
+        { progress: (m.todayAct / m.todayReq) * 100 }));
+    } else {
+      tiles.appendChild(workTile('今日', escapeHtml(formatMinutes(m.todayAct)), '今日は休み（所定なし）'));
+    }
 
     var ws = weekStartOf(today);
     var we = addDays(ws, 6);
     var w = periodStats(ws, we, today);
-    var wNeed = w.required - w.actual;
-    tiles.appendChild(workTile('今週（' + fmtShortMD(ws) + '〜' + fmtShortMD(we) + '）',
-      escapeHtml(formatMinutes(w.actual)) + ' <small>/ ' + escapeHtml(formatMinutes(w.required)) + '</small>',
-      wNeed > 0 ? 'あと ' + formatMinutes(wNeed) + '（残り勤務日 ' + w.remainingDays + '日）' : '今週の所定に到達しています',
-      { progress: w.required ? (w.actual / w.required) * 100 : 0 }));
+    var wLeft = w.required - w.actual;
+    tiles.appendChild(workTile('今週・今日まで（' + fmtShortMD(ws) + '〜' + fmtShortMD(we) + '）',
+      escapeHtml(formatMinutes(w.actual)) + ' <small>/ ' + escapeHtml(formatMinutes(w.reqToDate)) + '</small>',
+      '過不足 ' + fmtSigned(w.actual - w.reqToDate) + ' ・ 週の所定 ' + formatMinutes(w.required)
+        + (wLeft > 0 ? '（週末まであと ' + formatMinutes(wLeft) + '）' : '（到達）'),
+      { progress: w.reqToDate ? (w.actual / w.reqToDate) * 100 : 0 }));
+
+    tiles.appendChild(workTile('明日以降の予定（今月）', escapeHtml(formatMinutes(m.planned)),
+      m.planned
+        ? '実績には含めていません\n予定どおりなら月末 ' + fmtSigned(m.actual + m.planned - m.required)
+        : '明日以降の予定はまだありません',
+      { plan: true }));
   }
 
   function renderWorkCalendar(today, mStart, mEnd) {
@@ -2548,7 +2706,8 @@
         var k = keyOf(day);
         var req = requiredMinutes(day);
         var def = defaultRequired(day);
-        var act = actualMinutes(k);
+        var act = loggedMinutes(k);
+        var isFuture = day.getTime() > t0;
         var hol = holidayName(day);
         var hasExc = Object.prototype.hasOwnProperty.call(work.exceptions, k);
 
@@ -2579,7 +2738,12 @@
 
         var a = document.createElement('div');
         a.className = 'cd-act';
-        if (act > 0) {
+        if (isFuture) {
+          if (act > 0) {
+            a.textContent = '予 ' + formatMinutes(act);
+            a.className += ' plan';
+          }
+        } else if (act > 0) {
           a.textContent = formatMinutes(act);
           if (req > 0 && day.getTime() < t0) a.className += act >= req ? ' met' : ' short';
           else if (req > 0 && act >= req) a.className += ' met';
@@ -2590,7 +2754,7 @@
         cell.appendChild(a);
 
         var label = (day.getMonth() + 1) + '/' + day.getDate() + '（' + WEEKDAYS_JA[day.getDay()] + '）'
-          + (hol ? ' ' + hol : '') + ' ・ 所定 ' + formatMinutes(req) + ' ・ 実績 ' + formatMinutes(act)
+          + (hol ? ' ' + hol : '') + ' ・ 所定 ' + formatMinutes(req) + ' ・ ' + (isFuture ? '予定 ' : '実績 ') + formatMinutes(act)
           + (hasExc ? '（個別設定）' : '') + ' — クリックで' + (hasExc ? '既定に戻す' : (def > 0 ? '休みにする' : '勤務日にする'));
         cell.title = label;
         cell.setAttribute('aria-label', label);
@@ -2606,7 +2770,7 @@
     host.appendChild(cal);
     var legend = document.createElement('div');
     legend.className = 'cal-legend';
-    legend.textContent = '灰色＝休み ・ 赤字＝日曜・祝日 ・ 休／出／時間＝個別設定 ・ 数字＝その日の実績（緑: 所定以上、赤: 不足）';
+    legend.textContent = '灰色＝休み ・ 赤字＝日曜・祝日 ・ 休／出／時間＝個別設定 ・ 数字＝その日の実績（緑: 所定以上、赤: 不足） ・ 「予」＝明日以降の予定（実績に含めない）';
     host.appendChild(legend);
   }
 
@@ -2647,33 +2811,38 @@
     var rows = [];
     var tKey = keyOf(today);
     var ws = weekStartOf(mStart);
-    var total = { workDays: 0, required: 0, actual: 0 };
+    var total = periodStats(mStart, mEnd, today);
     while (ws.getTime() <= mEnd.getTime()) {
       var from = ws.getTime() < mStart.getTime() ? mStart : ws;
       var we = addDays(ws, 6);
       var to = we.getTime() > mEnd.getTime() ? mEnd : we;
       var s = periodStats(from, to, today);
-      total.workDays += s.workDays;
-      total.required += s.required;
-      total.actual += s.actual;
       var isCur = tKey >= keyOf(from) && tKey <= keyOf(to);
       rows.push({
         cls: isCur ? 'is-current' : '',
-        cells: [fmtShortMD(from) + '〜' + fmtShortMD(to), s.workDays + '日', formatMinutes(s.required), formatMinutes(s.actual), diffCell(s.actual - s.required)]
+        cells: [fmtShortMD(from) + '〜' + fmtShortMD(to)].concat(workRowCells(s))
       });
       ws = addDays(ws, 7);
     }
-    rows.push({
-      cls: 'is-total',
-      cells: ['月合計', total.workDays + '日', formatMinutes(total.required), formatMinutes(total.actual), diffCell(total.actual - total.required)]
-    });
-    host.appendChild(workTable(['期間', '勤務日', '所定', '実績', '差分'], rows));
+    rows.push({ cls: 'is-total', cells: ['月合計'].concat(workRowCells(total)) });
+    host.appendChild(workTable(['期間', '勤務日', '所定', '実績', '差分（今日まで）', '予定'], rows));
+  }
+
+  // Actual and the difference only cover days up to today; later days contribute plans only.
+  function workRowCells(s) {
+    return [
+      s.workDays + '日',
+      formatMinutes(s.required),
+      s.started ? formatMinutes(s.actual) : '—',
+      s.started ? diffCell(s.actual - s.reqToDate) : '—',
+      s.planned ? { text: formatMinutes(s.planned), cls: 'plan' } : ''
+    ];
   }
 
   function renderWorkMonths(today) {
     var host = document.getElementById('work-months');
     host.innerHTML = '';
-    var keys = Object.keys(schedule).filter(function (k) { return actualMinutes(k) > 0; }).sort();
+    var keys = Object.keys(schedule).filter(function (k) { return !isFutureKey(k) && loggedMinutes(k) > 0; }).sort();
     var cur = monthStart(today);
     var first = keys.length ? monthStart(new Date(+keys[0].slice(0, 4), +keys[0].slice(5, 7) - 1, 1)) : cur;
     var earliest = new Date(cur.getFullYear(), cur.getMonth() - 11, 1);
@@ -2684,19 +2853,14 @@
       (function (ms) {
         var s = periodStats(ms, monthEnd(ms), today);
         var isCur = ms.getTime() === cur.getTime();
-        var need = s.required - s.actual;
         rows.push({
           cls: 'clickable' + (isCur ? ' is-current' : ''),
           onClick: function () { workMonth = ms; renderWorkPanel(); document.getElementById('work-panel').scrollIntoView({ block: 'start' }); },
-          cells: [
-            ms.getFullYear() + '年' + (ms.getMonth() + 1) + '月' + (isCur ? '（今月）' : ''),
-            s.workDays + '日', formatMinutes(s.required), formatMinutes(s.actual),
-            isCur ? (need > 0 ? { text: 'あと ' + formatMinutes(need), cls: '' } : { text: '達成', cls: 'pos' }) : diffCell(s.actual - s.required)
-          ]
+          cells: [ms.getFullYear() + '年' + (ms.getMonth() + 1) + '月' + (isCur ? '（今月）' : '')].concat(workRowCells(s))
         });
       })(m);
     }
-    host.appendChild(workTable(['月', '勤務日', '所定', '実績', '差分'], rows));
+    host.appendChild(workTable(['月', '勤務日', '所定', '実績', '差分（今日まで）', '予定'], rows));
   }
 
   function renderWorkSettings() {
@@ -2748,9 +2912,11 @@
       rm.textContent = '✕';
       rm.setAttribute('aria-label', dateEl.textContent + 'の個別設定を削除');
       rm.addEventListener('click', function () {
+        var snap = snapshotState();
         delete work.exceptions[k];
         save();
         renderWorkPanel();
+        offerUndo(dateEl.textContent + ' の個別設定を削除しました', snap);
       });
       item.appendChild(dateEl);
       item.appendChild(kind);
@@ -2786,8 +2952,83 @@
     });
   }
 
+  function renderWorkChip(today) {
+    var chip = document.getElementById('work-chip');
+    var m = periodStats(monthStart(today), monthEnd(today), today);
+    var diff = m.actual - m.reqToDate;
+    var need = m.required - m.actual;
+    chip.innerHTML = '今日 <b>' + escapeHtml(formatMinutes(m.todayAct)) + '</b>'
+      + (m.todayReq ? ' / ' + escapeHtml(formatMinutes(m.todayReq)) : '')
+      + ' <span class="sep">・</span> 今日まで <b class="' + (diff >= 0 ? 'pos' : 'neg') + '">' + escapeHtml(fmtSigned(diff)) + '</b>'
+      + ' <span class="sep">・</span> 今月あと <b>' + (need > 0 ? escapeHtml(formatMinutes(need)) : '達成') + '</b>';
+  }
+
+  function csvField(v) {
+    var s = v === null || v === undefined ? '' : String(v);
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  // Excel (Japanese Windows) needs a BOM to read UTF-8 CSV correctly.
+  function downloadCsv(filename, rows) {
+    var text = '﻿' + rows.map(function (r) { return r.map(csvField).join(','); }).join('\r\n') + '\r\n';
+    var blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function hoursDecimal(min) { return (Math.round((min / 60) * 100) / 100).toFixed(2); }
+
+  function exportMonthCsv(kind) {
+    var today = new Date();
+    var mStart = workMonth || monthStart(today);
+    var mEnd = monthEnd(mStart);
+    var ym = mStart.getFullYear() + '-' + pad2(mStart.getMonth() + 1);
+    var rows;
+    if (kind === 'detail') {
+      rows = [['日付', '曜日', '区分', '開始', '内容', '業務種別', '分', '時間', '勤務時間に算入', '詳細']];
+      for (var d = mStart; d.getTime() <= mEnd.getTime(); d = addDays(d, 1)) {
+        var k = keyOf(d);
+        var future = isFutureKey(k);
+        (schedule[k] || []).slice().sort(function (a, b) { return (a.time || '99') < (b.time || '99') ? -1 : 1; }).forEach(function (e) {
+          var min = e.minutes || 0;
+          rows.push([k, WEEKDAYS_JA[d.getDay()], future ? '予定' : '実績', e.time || '', e.content || '', e.category || '',
+            min, hoursDecimal(min), !future && countsTowardWork(e) ? '○' : '×', e.details || '']);
+        });
+      }
+    } else {
+      rows = [['日付', '曜日', '区分', '所定(分)', '実績(分)', '差分(分)', '予定(分)', '所定(時間)', '実績(時間)', '差分(時間)']];
+      var tot = { req: 0, act: 0, plan: 0 };
+      for (var day = mStart; day.getTime() <= mEnd.getTime(); day = addDays(day, 1)) {
+        var key = keyOf(day);
+        var fut = isFutureKey(key);
+        var req = requiredMinutes(day);
+        var logged = loggedMinutes(key);
+        var act = fut ? '' : logged;
+        var hol = holidayName(day);
+        var exc = Object.prototype.hasOwnProperty.call(work.exceptions, key);
+        var kindLabel = exc ? (req === 0 ? '休み（個別）' : '個別設定') : (req > 0 ? '勤務日' : (hol || '休み'));
+        tot.req += req;
+        if (!fut) tot.act += logged; else tot.plan += logged;
+        rows.push([key, WEEKDAYS_JA[day.getDay()], kindLabel, req, act, fut ? '' : logged - req, fut ? logged : '',
+          hoursDecimal(req), fut ? '' : hoursDecimal(logged), fut ? '' : hoursDecimal(logged - req)]);
+      }
+      var s = periodStats(mStart, mEnd, today);
+      rows.push(['合計', '', '', tot.req, tot.act, s.started ? s.actual - s.reqToDate : '', tot.plan,
+        hoursDecimal(tot.req), hoursDecimal(tot.act), s.started ? hoursDecimal(s.actual - s.reqToDate) : '']);
+    }
+    downloadCsv('daytrack_' + (kind === 'detail' ? '明細' : '日別') + '_' + ym + '.csv', rows);
+    showToast(ym + ' の' + (kind === 'detail' ? '明細' : '日別集計') + 'CSVを保存しました（Excelで開けます）。', null);
+  }
+
   function renderWorkPanel() {
     var today = new Date();
+    renderWorkChip(today);
     var cur = monthStart(today);
     if (!workMonth) workMonth = cur;
     var mStart = workMonth;
@@ -2805,19 +3046,24 @@
   function renderTotals() {
     var dateKeys = visibleDateKeys();
     var entries = [];
+    var skippedPlans = 0;
     dateKeys.forEach(function (dk) {
-      (schedule[dk] || []).forEach(function (e) { entries.push(e); });
+      (schedule[dk] || []).forEach(function (e) {
+        if (isFutureKey(dk)) skippedPlans++;
+        else entries.push(e);
+      });
     });
 
-    var scopeLabel = viewMode === 'today' ? '・ 本日' : ('・ 全' + dateKeys.length + '日');
+    var scopeLabel = viewMode === 'today' ? '・ 本日' : ('・ 全' + dateKeys.filter(function (k) { return !isFutureKey(k); }).length + '日');
+    if (skippedPlans) scopeLabel += '（明日以降の予定 ' + skippedPlans + '件は含めていません）';
     document.getElementById('content-totals-scope').textContent = scopeLabel;
     document.getElementById('category-totals-scope').textContent = scopeLabel;
 
     var contentRows = computeGroups(entries, function (e) { return e.content; }, '(内容未入力)');
-    renderTotalsInto(totalsContainer, contentRows, 'まだ予定が登録されていません。');
+    renderTotalsInto(totalsContainer, contentRows, 'まだ実績がありません。');
 
     var categoryRows = computeGroups(entries, function (e) { return e.category; }, '(未分類)');
-    renderTotalsInto(categoryTotalsContainer, categoryRows, 'まだ業務種別が登録されていません。');
+    renderTotalsInto(categoryTotalsContainer, categoryRows, 'まだ実績がありません。');
     // Totals change whenever minutes or categories do, so the work-hours panel refreshes alongside.
     renderWorkPanel();
   }
@@ -2842,9 +3088,12 @@
         removeBtn.setAttribute('aria-label', cat + 'を削除');
         removeBtn.textContent = '✕';
         removeBtn.addEventListener('click', function () {
+          var snap = snapshotState();
           categories = categories.filter(function (c) { return c !== cat; });
           save();
           renderCategoryChips();
+          renderWorkPanel();
+          offerUndo('業務種別「' + cat + '」を削除しました', snap);
         });
         chip.appendChild(removeBtn);
         categoryChipsEl.appendChild(chip);
@@ -3222,6 +3471,70 @@
     list.forEach(function (t) { listEl.appendChild(buildTaskRow(t, today, true, addedKeys)); });
   }
 
+  // ---------- undo & notices ----------
+
+  var undoSnapshot = null;
+  var toastTimer = null;
+
+  function snapshotState() {
+    return JSON.stringify({ days: schedule, categories: categories, running: running, report: report, work: work });
+  }
+
+  function showToast(message, snapshot) {
+    var toast = document.getElementById('toast');
+    undoSnapshot = snapshot;
+    document.getElementById('toast-msg').textContent = message;
+    document.getElementById('toast-undo').hidden = !snapshot;
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, snapshot ? 10000 : 4000);
+  }
+
+  function hideToast() {
+    document.getElementById('toast').hidden = true;
+    undoSnapshot = null;
+  }
+
+  // Call with the snapshot taken *before* the destructive change.
+  function offerUndo(message, snapshot) { showToast(message + '。', snapshot); }
+
+  function restoreSnapshot() {
+    if (!undoSnapshot) return;
+    var s = JSON.parse(undoSnapshot);
+    schedule = s.days || {};
+    categories = s.categories || [];
+    running = s.running || null;
+    report = sanitizeReport(s.report);
+    work = sanitizeWork(s.work);
+    reparseReport();
+    save();
+    renderAll();
+    showToast('元に戻しました。', null);
+  }
+
+  function entryCount() {
+    return Object.keys(schedule).reduce(function (n, k) { return n + schedule[k].length; }, 0);
+  }
+
+  function renderBackupNotice() {
+    var bar = document.getElementById('backup-bar');
+    var note = document.getElementById('last-export-note');
+    var now = Date.now();
+    var last = lastExportAt ? new Date(lastExportAt) : null;
+    var days = last ? Math.floor((now - last.getTime()) / 86400000) : null;
+    note.textContent = last
+      ? '最終書き出し: ' + (last.getMonth() + 1) + '/' + last.getDate() + '（' + (days === 0 ? '今日' : days + '日前') + '）'
+      : 'まだ書き出し（バックアップ）をしていません。';
+    var snoozed = backupSnoozeUntil && Date.parse(backupSnoozeUntil) > now;
+    var due = entryCount() >= 5 && (days === null || days >= BACKUP_REMIND_DAYS);
+    bar.hidden = !due || snoozed;
+    if (!bar.hidden) {
+      document.getElementById('backup-bar-text').textContent =
+        (days === null ? 'まだバックアップ（書き出し）をしていません。' : '最後のバックアップから ' + days + '日 経っています。')
+        + 'データはこのブラウザ内だけにあり、ブラウザのデータ消去で失われるため、書き出しをおすすめします。';
+    }
+  }
+
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -3237,6 +3550,7 @@
     renderTotals();
     renderCategoryChips();
     renderTasks();
+    renderBackupNotice();
   }
 
   // ---------- events ----------
@@ -3286,11 +3600,13 @@
 
   document.getElementById('report-clear-btn').addEventListener('click', function () {
     if (!confirm('読み込んだ週報タスクを削除しますか？（今日の予定に追加した項目は残ります）')) return;
+    var snap = snapshotState();
     report = null;
     reportModel = null;
     save();
     renderAll();
     document.getElementById('report-status').textContent = '';
+    offerUndo('週報タスクを削除しました', snap);
   });
 
   document.querySelectorAll('.seg-btn[data-view]').forEach(function (btn) {
@@ -3387,6 +3703,27 @@
     if (importReport(lastReportText, name, report.encoding)) {
       document.getElementById('report-status').textContent = '更新した週報を新しい基準として読み込みました。';
     }
+  });
+
+  document.getElementById('toast-undo').addEventListener('click', restoreSnapshot);
+  document.getElementById('toast-close').addEventListener('click', hideToast);
+
+  document.getElementById('work-chip').addEventListener('click', function () {
+    workMonth = monthStart(new Date());
+    renderWorkPanel();
+    document.getElementById('work-panel').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
+
+  document.getElementById('csv-detail-btn').addEventListener('click', function () { exportMonthCsv('detail'); });
+  document.getElementById('csv-daily-btn').addEventListener('click', function () { exportMonthCsv('daily'); });
+
+  document.getElementById('backup-now').addEventListener('click', function () {
+    document.getElementById('export-json-btn').click();
+  });
+  document.getElementById('backup-later').addEventListener('click', function () {
+    backupSnoozeUntil = new Date(Date.now() + 7 * 86400000).toISOString();
+    save();
+    renderBackupNotice();
   });
 
   function shiftWorkMonth(n) {
@@ -3494,11 +3831,13 @@
   });
 
   document.getElementById('clear-all-btn').addEventListener('click', function () {
-    if (confirm('すべてのスケジュールデータを削除します。よろしいですか？（この操作は元に戻せません）')) {
+    if (confirm('すべてのスケジュールデータを削除します。よろしいですか？（直後の通知から一度だけ元に戻せます）')) {
+      var snap = snapshotState();
       schedule = {};
       running = null;
       save();
       renderAll();
+      offerUndo('すべての予定を削除しました', snap);
     }
   });
 
@@ -3601,6 +3940,10 @@
     var statusEl = document.getElementById('sync-status');
     statusEl.className = '';
     statusEl.textContent = 'JSONファイルを書き出しました。';
+    lastExportAt = new Date().toISOString();
+    backupSnoozeUntil = null;
+    save();
+    renderBackupNotice();
   });
 
   document.getElementById('import-json-file').addEventListener('change', function (ev) {
