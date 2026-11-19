@@ -867,6 +867,68 @@
   .edit-bar-text { font-size: 12.5px; }
   .edit-bar-text b { font-family: 'Roboto Mono', monospace; color: var(--warn); font-size: 15px; }
 
+  .add-task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+    border: 1px solid var(--primary);
+    background: var(--surface-alt);
+    border-radius: 10px;
+  }
+  .add-task-form[hidden] { display: none; }
+  .add-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 10px; }
+  .add-grid > * { min-width: 0; }
+  .add-field { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
+  .add-field.wide { grid-column: 1 / -1; }
+  .add-field select, .add-field input { width: 100%; min-width: 0; height: 34px; }
+  .add-field select:disabled { opacity: 0.45; }
+  .add-preview-head { font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
+  .add-preview {
+    margin: 0;
+    padding: 8px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Roboto Mono', 'Zen Kaku Gothic New', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .add-preview .ctx { color: var(--text-muted); }
+  .add-preview .new { display: inline-block; min-width: 100%; background: var(--primary-soft); color: var(--primary-strong); font-weight: 700; }
+  .add-preview .queued { color: var(--primary-strong); }
+  .add-task-status { font-size: 12px; color: var(--primary-strong); }
+  .add-task-status.error { color: var(--overdue); }
+  .added-tag {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 700;
+    background: var(--primary);
+    color: var(--on-primary);
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: 1px;
+  }
+  .task-row.is-added { border-left-color: var(--primary); border-left-style: solid; }
+  .node-add {
+    font-size: 11px;
+    padding: 1px 8px;
+    border: 1px dashed var(--primary);
+    color: var(--primary-strong);
+    background: transparent;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .node-add:hover { background: var(--primary-soft); }
+  .diff-list .diff-line { font-family: 'Roboto Mono', 'Zen Kaku Gothic New', monospace; font-size: 11.5px; white-space: pre-wrap; color: var(--text-muted); margin-left: 6px; }
+  @media (max-width: 640px) {
+    .add-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  }
+
   .report-output {
     display: flex;
     flex-direction: column;
@@ -1223,8 +1285,33 @@
     <div class="edit-bar" id="edit-bar" hidden>
       <span class="edit-bar-text" id="edit-bar-text"></span>
       <div class="row">
+        <button type="button" class="btn ghost small" id="add-task-open">＋タスクを追加</button>
         <button type="button" class="btn small" id="make-report-btn">週報テキストを作成</button>
         <button type="button" class="btn ghost small" id="revert-edits-btn">変更を元に戻す</button>
+      </div>
+    </div>
+
+    <div class="add-task-form" id="add-task-form" hidden>
+      <div class="report-output-head">
+        <h3>週報にタスクを追加</h3>
+        <button type="button" class="btn ghost small" id="add-task-close">閉じる</button>
+      </div>
+      <div class="add-grid">
+        <label class="add-field wide">追加先の見出し<select id="add-node" class="st-select-plain"></select></label>
+        <label class="add-field">状態<select id="add-status" class="st-select-plain"></select></label>
+        <label class="add-field">日付（空欄可）<input type="date" id="add-date"></label>
+        <label class="add-field">日付の意味<select id="add-kind" class="st-select-plain">
+          <option value="by">期限（この日まで）</option>
+          <option value="on">実施日（この日に行う）</option>
+        </select></label>
+        <label class="add-field wide">内容<input type="text" id="add-text" placeholder="例：セクション12" autocomplete="off"></label>
+      </div>
+      <label class="check-label"><input type="checkbox" id="add-bar" checked> 「|」を付ける（追加した行として週報で明示）</label>
+      <div class="add-preview-head">週報への書き込みイメージ</div>
+      <pre class="add-preview" id="add-preview" aria-live="polite"></pre>
+      <div class="row">
+        <button type="button" class="btn small" id="add-task-submit">追加</button>
+        <span id="add-task-status" class="add-task-status"></span>
       </div>
     </div>
 
@@ -1354,7 +1441,21 @@
       });
     }
     var encoding = ['utf-8', 'utf-8-bom', 'shift_jis', 'utf-16le', 'utf-16be'].indexOf(r.encoding) !== -1 ? r.encoding : 'utf-8';
-    return { text: r.text, sourceName: typeof r.sourceName === 'string' ? r.sourceName : '', importedAt: at, overrides: overrides, encoding: encoding };
+    var additions = Array.isArray(r.additions) ? r.additions.filter(function (a) {
+      return a && typeof a === 'object' && typeof a.text === 'string' && a.text.trim()
+        && typeof a.node === 'number' && EDITABLE_STATUSES.indexOf(a.status) !== -1;
+    }).map(function (a) {
+      return {
+        id: typeof a.id === 'string' ? a.id : uid(),
+        node: a.node,
+        status: a.status,
+        date: typeof a.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(a.date) ? a.date : '',
+        kind: a.kind === 'on' ? 'on' : 'by',
+        text: a.text.trim(),
+        bar: a.bar !== false
+      };
+    }) : [];
+    return { text: r.text, sourceName: typeof r.sourceName === 'string' ? r.sourceName : '', importedAt: at, overrides: overrides, encoding: encoding, additions: additions };
   }
 
   function loadTaskPrefs(p) {
@@ -1791,7 +1892,8 @@
   function periodStats(start, end, today) {
     var s = {
       required: 0, workDays: 0, reqToDate: 0, actual: 0, planned: 0, reqFuture: 0, futureDays: 0,
-      todayReq: 0, todayAct: 0, todayPlan: 0, started: false
+      todayReq: 0, todayAct: 0, todayPlan: 0, started: false,
+      reqBefore: 0, actBefore: 0 // days strictly before today: the morning "carried over" balance
     };
     var t0 = startOfDay(today).getTime();
     for (var d = start; d.getTime() <= end.getTime(); d = addDays(d, 1)) {
@@ -1805,6 +1907,7 @@
         s.started = true;
         s.reqToDate += r;
         if (d.getTime() === t0) { s.todayReq = r; s.todayAct = m.actual; s.todayPlan = m.planned; }
+        else { s.reqBefore += r; s.actBefore += m.actual; }
       } else {
         s.reqFuture += r;
         if (r > 0) s.futureDays++;
@@ -1831,6 +1934,13 @@
   function fmtSigned(min) {
     if (min === 0) return '±0';
     return (min > 0 ? '+' : '−') + formatMinutes(Math.abs(min));
+  }
+
+  // Today's share of the required time, for the parenthetical next to the "前日まで" balance.
+  function todayNote(m) {
+    if (!m.todayReq) return m.started && m.todayAct ? '今日 ' + formatMinutes(m.todayAct) : '';
+    if (m.todayAct >= m.todayReq) return '今日分 到達';
+    return '今日あと ' + formatMinutes(m.todayReq - m.todayAct);
   }
 
   function fmtShortMD(d) { return (d.getMonth() + 1) + '/' + d.getDate(); }
@@ -1887,6 +1997,8 @@
   var DASH = '[-－ー‐−―]';
   var DATE_PREFIX_RE = new RegExp('^(' + DASH + '?)\\s*(\\d{1,2})/(\\d{1,2})(?!\\d)\\s*(.*)$');
   var LEADING_DASH_RE = new RegExp('^' + DASH + '\\s*');
+  // Same shape as DATE_PREFIX_RE, split finer so the report's own date notation can be learned and reused.
+  var DATE_FMT_RE = new RegExp('^(' + DASH + '?)(\\s*)(\\d{1,2})/(\\d{1,2})(?!\\d)(\\s*)');
   var NODE_DEADLINE_RE = /[（(]\s*(?:期限|〆切?|締切)?\s*[:：]?\s*(\d{1,2})\/(\d{1,2})\s*(?:まで)?\s*[）)]/;
 
   // Full-width digits/slash → ASCII, char-for-char, so match indices still line up with the original string.
@@ -1910,13 +2022,14 @@
   }
 
   function parseReport(text, ref) {
-    var root = { level: 0, title: '', deadline: null, notes: [], children: [], tasks: [] };
+    var root = { level: 0, title: '', deadline: null, notes: [], children: [], tasks: [],
+      line: -1, lastLine: -1, taskLines: [], noteLines: [], path: [], inherited: null };
     var stack = [root];
     var tasks = [];
 
     function current() { return stack[stack.length - 1]; }
 
-    function openNode(level, rawTitle, changed) {
+    function openNode(level, rawTitle, changed, lineIndex) {
       while (stack.length > 1 && current().level >= level) stack.pop();
       var title = rawTitle.trim();
       var deadline = null;
@@ -1925,8 +2038,14 @@
         deadline = inferDate(+dm[1], +dm[2], ref);
         title = (title.slice(0, dm.index) + title.slice(dm.index + dm[0].length)).trim();
       }
-      var node = { level: level, title: title, deadline: deadline, changed: changed, notes: [], children: [], tasks: [] };
-      current().children.push(node);
+      var parent = current();
+      var node = {
+        level: level, title: title, deadline: deadline, changed: changed, notes: [], children: [], tasks: [],
+        // Where the heading and its own lines sit, so tasks added in the app can be written back in place.
+        line: lineIndex, lastLine: lineIndex, taskLines: [], noteLines: [],
+        path: parent.path.concat([title]), inherited: deadline || parent.inherited
+      };
+      parent.children.push(node);
       stack.push(node);
     }
 
@@ -1943,6 +2062,7 @@
         if (date) {
           kind = dm[1] ? 'by' : 'on';
           text = body.slice(body.length - dm[4].length);
+          learnDateFormat(body, half, !!dm[4]);
         }
       }
       if (!date) text = body.replace(LEADING_DASH_RE, '');
@@ -1964,13 +2084,37 @@
       };
       tasks.push(task);
       current().tasks.push(task);
+      current().taskLines.push(mark.line);
+      current().lastLine = mark.line;
+    }
+
+    // Record how dates are written (dash, zero padding, digit width, spacing) from the original characters.
+    function learnDateFormat(body, half, hasText) {
+      var f = DATE_FMT_RE.exec(half);
+      if (!f) return;
+      var p = 0;
+      function take(n) { var v = body.substr(p, n); p += n; return v; }
+      var dash = take(f[1].length);
+      var dashGap = take(f[2].length);
+      var mon = take(f[3].length);
+      var slash = take(1);
+      var day = take(f[4].length);
+      var gap = take(f[5].length);
+      if (dash) { bump(stats.dash, dash); bump(stats.dashGap, dashGap); }
+      bump(stats.slash, slash);
+      [[mon, +f[3]], [day, +f[4]]].forEach(function (x) {
+        if (x[1] < 10) stats.datePad[x[0].length === 2 ? 'pad' : 'nopad']++;
+        stats.dateDigits[/[０-９]/.test(x[0]) ? 'full' : 'half']++;
+      });
+      if (hasText) bump(stats.dateGap, gap);
     }
 
     // How this report writes things, so text generated from it matches (full/half width, marker words, spacing).
     var stats = {
       bar: {}, bracket: {}, sep: {}, form: { long: 0, short: 0 },
       marker: { done: {}, doing: {}, todo: {}, plan: {}, hold: {}, cancel: {} },
-      checkOn: {}, checkOff: {}, symOn: {}, symOff: {}
+      checkOn: {}, checkOff: {}, symOn: {}, symOff: {},
+      dash: {}, dashGap: {}, slash: {}, dateGap: {}, datePad: { pad: 0, nopad: 0 }, dateDigits: { full: 0, half: 0 }
     };
 
     text.split(/\r\n|\n|\r/).forEach(function (raw, lineIndex) {
@@ -2015,14 +2159,16 @@
         return;
       }
 
-      if ((m = /^\d+[.．](?!\d)\s*(.+)$/.exec(h))) { openNode(1, m[1], changed); return; }
-      if ((m = /^[■◆●]\s*(.+)$/.exec(t))) { openNode(1, m[1], changed); return; }
-      if ((m = /^【([^】]+)】\s*$/.exec(t))) { openNode(1, m[1], changed); return; }
-      if ((m = /^[（(]\s*\d+\s*[）)]\s*(.+)$/.exec(h))) { openNode(2, m[1], changed); return; }
-      if ((m = /^[①-⑳]\s*(.+)$/.exec(t))) { openNode(2, m[1], changed); return; }
-      if ((m = /^[+＋]\s*(.+)$/.exec(t))) { openNode(3, m[1], changed); return; }
+      if ((m = /^\d+[.．](?!\d)\s*(.+)$/.exec(h))) { openNode(1, m[1], changed, lineIndex); return; }
+      if ((m = /^[■◆●]\s*(.+)$/.exec(t))) { openNode(1, m[1], changed, lineIndex); return; }
+      if ((m = /^【([^】]+)】\s*$/.exec(t))) { openNode(1, m[1], changed, lineIndex); return; }
+      if ((m = /^[（(]\s*\d+\s*[）)]\s*(.+)$/.exec(h))) { openNode(2, m[1], changed, lineIndex); return; }
+      if ((m = /^[①-⑳]\s*(.+)$/.exec(t))) { openNode(2, m[1], changed, lineIndex); return; }
+      if ((m = /^[+＋]\s*(.+)$/.exec(t))) { openNode(3, m[1], changed, lineIndex); return; }
+      current().lastLine = lineIndex;
 
       if ((m = /^[★☆＊*※]\s*(.*)$/.exec(t))) {
+        current().noteLines.push(lineIndex);
         if (m[1].trim()) current().notes.push({ mark: t.charAt(0), text: m[1].trim(), changed: changed });
         return;
       }
@@ -2033,6 +2179,7 @@
       }
 
       current().notes.push({ mark: '', text: t, changed: changed });
+      current().noteLines.push(lineIndex);
     });
 
     // With no example in the report, lean full-width if the report mostly writes digits/symbols full-width.
@@ -2055,7 +2202,14 @@
       checkOn: topKey(stats.checkOn, fw ? 'ｘ' : 'x'),
       checkOff: topKey(stats.checkOff, fw ? '　' : ' '),
       symOn: topKey(stats.symOn, '☑'),
-      symOff: topKey(stats.symOff, '☐')
+      symOff: topKey(stats.symOff, '☐'),
+      // Date notation for new lines, e.g. "-11/25 " or "－１１／２５　".
+      dash: topKey(stats.dash, fw ? '－' : '-'),
+      dashGap: topKey(stats.dashGap, ''),
+      slash: topKey(stats.slash, fw ? '／' : '/'),
+      dateGap: topKey(stats.dateGap, fw ? '　' : ' '),
+      datePad: stats.datePad.pad >= stats.datePad.nopad,
+      dateFull: stats.dateDigits.full > stats.dateDigits.half || (stats.dateDigits.full === 0 && stats.dateDigits.half === 0 && fw)
     };
 
     return { root: root, tasks: tasks, style: style };
@@ -2075,26 +2229,156 @@
 
   // The imported report is the baseline; statuses changed in the app live in report.overrides keyed by line number.
   function effectiveStatus(task) {
+    if (task.added) return task.addition.status;
     var o = report && report.overrides ? report.overrides[task.mark.line] : null;
     return o || task.status;
   }
 
-  function isEdited(task) { return effectiveStatus(task) !== task.status; }
+  // Added tasks count as edits too: they only exist in the app until the report text is regenerated.
+  function isEdited(task) { return !!task.added || effectiveStatus(task) !== task.status; }
 
   function isClosed(task) { return STATUS_INFO[effectiveStatus(task)].closed; }
 
   function setTaskStatus(task, status) {
     if (!report) return;
-    if (!report.overrides) report.overrides = {};
-    if (status === task.status) delete report.overrides[task.mark.line];
-    else report.overrides[task.mark.line] = status;
+    if (task.added) {
+      task.addition.status = status;
+      reparseReport();
+    } else {
+      if (!report.overrides) report.overrides = {};
+      if (status === task.status) delete report.overrides[task.mark.line];
+      else report.overrides[task.mark.line] = status;
+    }
     save();
     renderAll();
     if (!document.getElementById('report-output').hidden) renderReportOutput();
   }
 
   function editedTasks() {
-    return reportModel ? reportModel.tasks.filter(isEdited) : [];
+    return reportModel ? reportModel.tasks.filter(function (t) { return !t.added && isEdited(t); }) : [];
+  }
+
+  function addedTasks() {
+    return reportModel ? reportModel.tasks.filter(function (t) { return t.added; }) : [];
+  }
+
+  // ---------- tasks added in the app ----------
+
+  function reportLines() { return report.text.split(/\r\n|\n|\r/); }
+
+  function eachNode(node, fn) {
+    fn(node);
+    node.children.forEach(function (ch) { eachNode(ch, fn); });
+  }
+
+  function findNode(line) {
+    var found = null;
+    if (reportModel) eachNode(reportModel.root, function (n) { if (n.line === line) found = n; });
+    return found;
+  }
+
+  // Leading whitespace a line would have without its change bar.
+  function leadingWs(line) { return /^[ \t　]*/.exec(removeChangeBar(line || ''))[0]; }
+
+  function wsCols(ws) {
+    var c = 0;
+    for (var i = 0; i < ws.length; i++) c += ws[i] === '\t' ? 4 : colWidth(ws[i]);
+    return c;
+  }
+
+  // Indent for a new task under `node`: copy the node's own task lines, else a same-level section's,
+  // else shift by the offset that same-level sections use, so the line lines up with its neighbours.
+  function taskIndentFor(node, lines) {
+    if (node.taskLines.length) return leadingWs(lines[node.taskLines[node.taskLines.length - 1]]);
+    var head = node.line >= 0 ? leadingWs(lines[node.line]) : '';
+    var exact = null;
+    var sameLevel = null;
+    var any = null;
+    eachNode(reportModel.root, function (n) {
+      if (n === node || !n.taskLines.length || n.line < 0) return;
+      any = any || n;
+      if (n.level !== node.level) return;
+      sameLevel = sameLevel || n;
+      if (!exact && leadingWs(lines[n.line]) === head) exact = n;
+    });
+    if (exact) return leadingWs(lines[exact.taskLines[0]]);
+    var ref = sameLevel || any;
+    var delta = ref ? wsCols(leadingWs(lines[ref.taskLines[0]])) - wsCols(leadingWs(lines[ref.line])) : 2;
+    if (delta <= 0) delta = 2;
+    var full = /　/.test(head) || (ref && /　/.test(leadingWs(lines[ref.taskLines[0]])));
+    if (full && delta % 2 === 0) return head + new Array(delta / 2 + 1).join('　');
+    return head + new Array(delta + 1).join(' ');
+  }
+
+  var FULL_DIGITS = '０１２３４５６７８９';
+  function toFullDigits(s) { return s.replace(/[0-9]/g, function (d) { return FULL_DIGITS.charAt(+d); }); }
+
+  // "-11/25 " / "11/25 " in the report's own notation (dash, zero padding, digit width, spacing).
+  function formatReportDate(add, style) {
+    if (!add.date) return '';
+    var mo = +add.date.slice(5, 7);
+    var da = +add.date.slice(8, 10);
+    var md = (style.datePad ? pad2(mo) : String(mo)) + '/' + (style.datePad ? pad2(da) : String(da));
+    if (style.dateFull) md = toFullDigits(md);
+    md = md.replace('/', style.slash);
+    return (add.kind === 'by' ? style.dash + style.dashGap : '') + md + style.dateGap;
+  }
+
+  // The whole new line, without the change bar (that is added with the other changed lines).
+  function formatAddedLine(add, node, lines) {
+    var style = reportModel.style;
+    return taskIndentFor(node, lines) + style.open + style.markerFor[add.status] + style.close + style.sep
+      + formatReportDate(add, style) + add.text;
+  }
+
+  // Line the new task is written after. Dated tasks go in date order among the section's own dated
+  // tasks (keeping a ★ note with the task it follows); others go after the section's last line of its own.
+  function addAnchorLine(node, add) {
+    if (add.date) {
+      var dated = node.tasks.filter(function (t) { return !t.added && t.date; });
+      if (dated.length) {
+        var after = null;
+        dated.forEach(function (t) { if (keyOf(t.date) <= add.date) after = t; });
+        if (!after) return dated[0].mark.line - 1;
+        var at = after.mark.line;
+        while (node.noteLines.indexOf(at + 1) !== -1) at++;
+        return at;
+      }
+    }
+    return node.lastLine;
+  }
+
+  // Several additions at one spot: dated ones in date order, undated ones after them, else as added.
+  function byAddDate(a, b) {
+    return (a.date || '9999') < (b.date || '9999') ? -1 : (a.date || '9999') > (b.date || '9999') ? 1 : 0;
+  }
+
+  function attachAdditions() {
+    if (!reportModel || !report || !report.additions) return;
+    var lines = reportLines();
+    report.additions.forEach(function (add) {
+      var node = findNode(add.node);
+      if (!node) return;
+      var date = add.date ? new Date(+add.date.slice(0, 4), +add.date.slice(5, 7) - 1, +add.date.slice(8, 10)) : null;
+      var task = {
+        id: reportModel.tasks.length,
+        status: add.status,
+        marker: reportModel.style.markerFor[add.status],
+        text: add.text,
+        date: date,
+        kind: date ? add.kind : null,
+        inheritedDue: date ? null : node.inherited,
+        changed: false,
+        mark: { line: null, kind: 'added' },
+        path: node.path.slice(),
+        added: true,
+        addition: add,
+        node: node,
+        line: formatAddedLine(add, node, lines)
+      };
+      reportModel.tasks.push(task);
+      node.tasks.push(task);
+    });
   }
 
   var HALF_TO_FULL_CHECK = { 'x': 'ｘ', 'X': 'Ｘ', ' ': '　' };
@@ -2158,15 +2442,28 @@
     var nl = nlMatch ? nlMatch[0] : '\n';
     var lines = report.text.split(/\r\n|\n|\r/);
     var changedLines = {};
+    var inserts = {};
     reportModel.tasks.forEach(function (t) {
+      if (t.added) {
+        var at = addAnchorLine(t.node, t.addition);
+        (inserts[at] = inserts[at] || []).push(t);
+        return;
+      }
       if (!isEdited(t)) return;
       lines[t.mark.line] = rewriteTaskLine(lines[t.mark.line], t, effectiveStatus(t), style);
       changedLines[t.mark.line] = true;
     });
-    return lines.map(function (l, i) {
-      if (changedLines[i]) return addChangeBar(l, style.bar);
-      return clearOldBars ? removeChangeBar(l) : l;
-    }).join(nl);
+    function insertedLines(at) {
+      return (inserts[at] || []).sort(function (a, b) { return byAddDate(a.addition, b.addition) || a.id - b.id; })
+        .map(function (t) { return t.addition.bar ? addChangeBar(t.line, style.bar) : t.line; });
+    }
+    var out = insertedLines(-1);
+    lines.forEach(function (l, i) {
+      if (changedLines[i]) out.push(addChangeBar(l, style.bar));
+      else out.push(clearOldBars ? removeChangeBar(l) : l);
+      out.push.apply(out, insertedLines(i));
+    });
+    return out.join(nl);
   }
 
   // Urgency only applies to open tasks; closed ones are informational.
@@ -2210,6 +2507,7 @@
 
   function reparseReport() {
     reportModel = report ? parseReport(report.text, new Date(report.importedAt)) : null;
+    attachAdditions();
   }
 
   var ENCODING_LABEL = {
@@ -2292,7 +2590,7 @@
       statusEl.textContent = 'タスク行が見つかりませんでした。各行の先頭に <完> <中> <未> <予> などの印が付いているか確認してください。';
       return false;
     }
-    report = { text: text, sourceName: sourceName, importedAt: now.toISOString(), overrides: {}, encoding: encoding || 'utf-8' };
+    report = { text: text, sourceName: sourceName, importedAt: now.toISOString(), overrides: {}, encoding: encoding || 'utf-8', additions: [] };
     document.getElementById('report-output').hidden = true;
     reportModel = model;
     save();
@@ -2838,10 +3136,17 @@
         { key: true, tone: 'pos', progress: pct }));
     }
 
-    var diff = m.actual - m.reqToDate;
-    tiles.appendChild(workTile('今日までの過不足', escapeHtml(fmtSignedHours(diff)),
-      '今日までの所定 ' + formatHours(m.reqToDate) + ' ／ 実績 ' + formatHours(m.actual),
-      { tone: diff >= 0 ? 'pos' : 'neg' }));
+    // Morning-friendly balance: the main figure is settled (days before today); today's share
+    // is shown separately in parentheses, so 8:00 doesn't read as "−8 hours behind".
+    var before = m.actBefore - m.reqBefore;
+    var toZero = m.reqToDate - m.actual;
+    tiles.appendChild(workTile('前日までの過不足',
+      escapeHtml(fmtSigned(before)) + (todayNote(m) ? ' <small>（' + escapeHtml(todayNote(m)) + '）</small>' : ''),
+      '前日までの所定 ' + formatHours(m.reqBefore) + ' ／ 実績 ' + formatHours(m.actBefore) + '\n'
+        + (toZero > 0
+          ? '今日中に±0にするには あと ' + formatMinutes(toZero)
+          : '今日分を含めて ' + fmtSigned(-toZero) + '（±0以上）'),
+      { tone: before >= 0 ? 'pos' : 'neg' }));
 
     // The one day-level tile: follows the 時間+分 / 分のみ setting.
     var todaySub = m.todayReq > 0
@@ -2859,7 +3164,7 @@
     var wLeft = w.required - w.actual;
     tiles.appendChild(workTile('今週・今日まで（' + fmtShortMD(ws) + '〜' + fmtShortMD(we) + '）',
       escapeHtml(formatHours(w.actual)) + ' <small>/ ' + escapeHtml(formatHours(w.reqToDate)) + '</small>',
-      '過不足 ' + fmtSignedHours(w.actual - w.reqToDate) + ' ・ 週の所定 ' + formatHours(w.required)
+      '前日までの過不足 ' + fmtSignedHours(w.actBefore - w.reqBefore) + ' ・ 週の所定 ' + formatHours(w.required)
         + (wLeft > 0 ? '（週末まであと ' + formatHours(wLeft) + '）' : '（到達）'),
       { progress: w.reqToDate ? (w.actual / w.reqToDate) * 100 : 0 }));
 
@@ -3017,7 +3322,7 @@
       ws = addDays(ws, 7);
     }
     rows.push({ cls: 'is-total', cells: ['月合計'].concat(workRowCells(total)) });
-    host.appendChild(workTable(['期間', '勤務日', '所定', '実績', '差分（今日まで）', '予定'], rows));
+    host.appendChild(workTable(['期間', '勤務日', '所定', '実績', '差分（前日まで）', '予定'], rows));
   }
 
   // Actual and the difference only cover days up to today; later days contribute plans only.
@@ -3026,7 +3331,7 @@
       s.workDays + '日',
       formatHours(s.required),
       s.started ? formatHours(s.actual) : '—',
-      s.started ? diffCell(s.actual - s.reqToDate) : '—',
+      s.started ? diffCell(s.actBefore - s.reqBefore) : '—',
       s.planned ? { text: formatHours(s.planned), cls: 'plan' } : ''
     ];
   }
@@ -3053,7 +3358,7 @@
         });
       })(m);
     }
-    host.appendChild(workTable(['月', '勤務日', '所定', '実績', '差分（今日まで）', '予定'], rows));
+    host.appendChild(workTable(['月', '勤務日', '所定', '実績', '差分（前日まで）', '予定'], rows));
   }
 
   function renderWorkSettings() {
@@ -3148,11 +3453,13 @@
   function renderWorkChip(today) {
     var chip = document.getElementById('work-chip');
     var m = periodStats(monthStart(today), monthEnd(today), today);
-    var diff = m.actual - m.reqToDate;
+    var before = m.actBefore - m.reqBefore;
     var need = m.required - m.actual;
+    var note = todayNote(m);
     chip.innerHTML = '今日 <b>' + escapeHtml(formatMinutes(m.todayAct)) + '</b>'
       + (m.todayReq ? ' / ' + escapeHtml(formatMinutes(m.todayReq)) : '')
-      + ' <span class="sep">・</span> 今日まで <b class="' + (diff >= 0 ? 'pos' : 'neg') + '">' + escapeHtml(fmtSignedHours(diff)) + '</b>'
+      + ' <span class="sep">・</span> 前日まで <b class="' + (before >= 0 ? 'pos' : 'neg') + '">' + escapeHtml(fmtSigned(before)) + '</b>'
+      + (note ? '（' + escapeHtml(note) + '）' : '')
       + ' <span class="sep">・</span> 今月あと <b>' + (need > 0 ? escapeHtml(formatHours(need)) : '達成') + '</b>';
   }
 
@@ -3369,6 +3676,7 @@
     else if (status === 'none') rowCls += ' u-none';
     else if (status === 'doing') rowCls += ' u-doing';
 
+    if (task.added) rowCls += ' is-added';
     var row = document.createElement('div');
     row.className = rowCls;
 
@@ -3420,7 +3728,13 @@
       tag.title = '週報で「|」が付いた行（前回からの更新）';
       textEl.appendChild(tag);
     }
-    if (status !== task.status) {
+    if (task.added) {
+      var addTag = document.createElement('span');
+      addTag.className = 'added-tag';
+      addTag.textContent = task.addition.bar ? '追加（|付き）' : '追加';
+      addTag.title = '週報テキストを作成すると、この行が書き込まれます';
+      textEl.appendChild(addTag);
+    } else if (status !== task.status) {
       var editTag = document.createElement('span');
       editTag.className = 'edit-tag';
       editTag.textContent = '変更: ' + STATUS_INFO[task.status].label + '→' + info.label;
@@ -3462,6 +3776,15 @@
         addBtn.addEventListener('click', function () { addTaskToToday(task); });
       }
       side.appendChild(addBtn);
+    }
+    if (task.added) {
+      var delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'btn ghost small';
+      delBtn.textContent = '削除';
+      delBtn.title = '追加したタスクを取り消します';
+      delBtn.addEventListener('click', function () { removeAddition(task.addition); });
+      side.appendChild(delBtn);
     }
     row.appendChild(side);
     return row;
@@ -3536,6 +3859,17 @@
         : 'すべて完了（' + c.total + '）';
       sum.appendChild(cnt);
     }
+    var plus = document.createElement('button');
+    plus.type = 'button';
+    plus.className = 'node-add';
+    plus.textContent = '＋追加';
+    plus.title = '「' + node.title + '」にタスクを追加';
+    plus.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      openAddForm(node.line);
+    });
+    sum.appendChild(plus);
     det.appendChild(sum);
 
     var body = document.createElement('div');
@@ -3560,11 +3894,15 @@
   function renderEditBar() {
     var bar = document.getElementById('edit-bar');
     var n = editedTasks().length;
+    var a = addedTasks().length;
     bar.hidden = !reportModel;
-    document.getElementById('edit-bar-text').innerHTML =
-      n ? '週報から変更した状態 <b>' + n + '</b> 件（週報テキストに反映すると「|」が付きます）'
-        : '状態はチェックボックスや選択肢で変更できます。変更後に週報テキストを作成できます。';
-    document.getElementById('revert-edits-btn').hidden = n === 0;
+    var parts = [];
+    if (n) parts.push('状態の変更 <b>' + n + '</b> 件');
+    if (a) parts.push('追加 <b>' + a + '</b> 件');
+    document.getElementById('edit-bar-text').innerHTML = parts.length
+      ? parts.join('・') + '（週報テキストに反映すると「|」が付きます）'
+      : '状態はチェックボックスや選択肢で変更できます。「＋タスクを追加」で週報に行を足せます。';
+    document.getElementById('revert-edits-btn').hidden = n + a === 0;
   }
 
   var lastReportText = '';
@@ -3573,11 +3911,27 @@
     var diffList = document.getElementById('diff-list');
     diffList.innerHTML = '';
     var edited = editedTasks();
-    if (edited.length === 0) {
+    var added = addedTasks();
+    if (edited.length === 0 && added.length === 0) {
       var li0 = document.createElement('li');
-      li0.textContent = '状態の変更はありません（「|」の整理のみ行います）。';
+      li0.textContent = '状態の変更・追加はありません（「|」の整理のみ行います）。';
       diffList.appendChild(li0);
     }
+    added.forEach(function (t) {
+      var li = document.createElement('li');
+      var label = document.createElement('span');
+      label.textContent = '追加（' + (t.path[t.path.length - 1] || '先頭') + '）：';
+      var pill = document.createElement('span');
+      pill.className = 'st-pill ' + STATUS_INFO[t.addition.status].cls;
+      pill.textContent = STATUS_INFO[t.addition.status].label;
+      var code = document.createElement('span');
+      code.className = 'diff-line';
+      code.textContent = (t.addition.bar ? addChangeBar(t.line, reportModel.style.bar) : t.line);
+      li.appendChild(label);
+      li.appendChild(pill);
+      li.appendChild(code);
+      diffList.appendChild(li);
+    });
     edited.forEach(function (t) {
       var li = document.createElement('li');
       var name = document.createElement('span');
@@ -3618,6 +3972,7 @@
       toolbar.hidden = true;
       clearBtn.hidden = true;
       document.getElementById('report-output').hidden = true;
+      document.getElementById('add-task-form').hidden = true;
       var empty = document.createElement('div');
       empty.className = 'empty-hint';
       empty.textContent = '週報（.txt）を読み込むか貼り付けると、期限までのタスクを一覧表示します。「<完> -10/20 内容」のように、状態の印と日付が付いた行を読み取ります。';
@@ -3626,6 +3981,11 @@
     }
     toolbar.hidden = false;
     clearBtn.hidden = false;
+    if (!document.getElementById('add-task-form').hidden) {
+      var keep = document.getElementById('add-node').value;
+      fillAddNodes(keep === '' ? null : +keep);
+      renderAddPreview();
+    }
 
     var today = new Date();
     var tasks = reportModel.tasks;
@@ -3893,9 +4253,166 @@
     renderReportOutput();
   });
 
+  // ---------- add a task to the report ----------
+
+  var addForm = document.getElementById('add-task-form');
+  var addNodeSel = document.getElementById('add-node');
+  var addStatusSel = document.getElementById('add-status');
+  var addDate = document.getElementById('add-date');
+  var addKind = document.getElementById('add-kind');
+  var addText = document.getElementById('add-text');
+  var addBar = document.getElementById('add-bar');
+  var addStatusMsg = document.getElementById('add-task-status');
+  var lastAddNode = null;
+
+  EDITABLE_STATUSES.forEach(function (st) {
+    var opt = document.createElement('option');
+    opt.value = st;
+    opt.textContent = STATUS_INFO[st].label;
+    addStatusSel.appendChild(opt);
+  });
+  addStatusSel.value = 'plan';
+
+  function fillAddNodes(selected) {
+    addNodeSel.innerHTML = '';
+    if (!reportModel) return;
+    if (reportModel.root.tasks.some(function (t) { return !t.added; })) {
+      var top = document.createElement('option');
+      top.value = String(reportModel.root.line);
+      top.textContent = '（見出しの前）';
+      addNodeSel.appendChild(top);
+    }
+    reportModel.root.children.forEach(function walk(n) {
+      var opt = document.createElement('option');
+      opt.value = String(n.line);
+      opt.textContent = new Array(n.level).join('　') + n.title + (n.deadline ? '（期限 ' + fmtShortMD(n.deadline) + '）' : '');
+      addNodeSel.appendChild(opt);
+      n.children.forEach(walk);
+    });
+    // Default: the given section, else the last one used, else the first with tasks of its own.
+    var want = selected !== undefined && selected !== null ? selected : lastAddNode;
+    if (want === null || !findNode(want)) {
+      want = null;
+      eachNode(reportModel.root, function (n) { if (want === null && n.line >= 0 && n.taskLines.length) want = n.line; });
+    }
+    if (want !== null && addNodeSel.querySelector('option[value="' + want + '"]')) addNodeSel.value = String(want);
+  }
+
+  function draftAddition() {
+    return {
+      node: +addNodeSel.value,
+      status: addStatusSel.value,
+      date: addDate.value || '',
+      kind: addKind.value === 'on' ? 'on' : 'by',
+      text: addText.value.trim(),
+      bar: addBar.checked
+    };
+  }
+
+  // Shows the new line between its neighbours exactly as it will be written (indent, marker, date, bar).
+  function renderAddPreview() {
+    var pre = document.getElementById('add-preview');
+    pre.innerHTML = '';
+    addKind.disabled = !addDate.value;
+    if (!reportModel || addNodeSel.value === '') return;
+    var node = findNode(+addNodeSel.value);
+    if (!node) return;
+    var lines = reportLines();
+    var draft = draftAddition();
+    if (!draft.text) draft.text = '（内容）';
+    var anchor = addAnchorLine(node, draft);
+    function put(text, cls) {
+      var span = document.createElement('span');
+      span.className = cls;
+      span.textContent = text;
+      pre.appendChild(span);
+      pre.appendChild(document.createTextNode('\n'));
+    }
+    if (anchor >= 0) {
+      if (anchor !== node.line && node.line >= 0) put(node.line < anchor - 1 ? lines[node.line] + '\n   ⋮' : lines[node.line], 'ctx');
+      put(lines[anchor], 'ctx');
+    }
+    var group = addedTasks().filter(function (t) { return addAnchorLine(t.node, t.addition) === anchor; })
+      .map(function (t) { return { add: t.addition, line: t.line, cls: 'queued', id: t.id }; });
+    group.push({ add: draft, line: formatAddedLine(draft, node, lines), cls: 'new', id: Infinity });
+    group.sort(function (a, b) { return byAddDate(a.add, b.add) || a.id - b.id; });
+    group.forEach(function (g) { put(g.add.bar ? addChangeBar(g.line, reportModel.style.bar) : g.line, g.cls); });
+    for (var i = anchor + 1; i < lines.length; i++) {
+      if (lines[i].trim()) { put(lines[i], 'ctx'); break; }
+    }
+    if (pre.lastChild) pre.removeChild(pre.lastChild);
+  }
+
+  function openAddForm(nodeLine) {
+    if (!reportModel) return;
+    fillAddNodes(nodeLine);
+    addStatusMsg.textContent = '';
+    addStatusMsg.className = 'add-task-status';
+    addForm.hidden = false;
+    renderAddPreview();
+    addForm.scrollIntoView({ block: 'nearest' });
+    addText.focus();
+  }
+
+  function submitAddition() {
+    var draft = draftAddition();
+    if (!reportModel || !findNode(draft.node)) return;
+    if (!draft.text) {
+      addStatusMsg.className = 'add-task-status error';
+      addStatusMsg.textContent = '内容を入力してください。';
+      addText.focus();
+      return;
+    }
+    var snap = snapshotState();
+    draft.id = uid();
+    if (!report.additions) report.additions = [];
+    report.additions.push(draft);
+    lastAddNode = draft.node;
+    reparseReport();
+    save();
+    renderAll();
+    if (!reportOutput.hidden) renderReportOutput();
+    addText.value = '';
+    addStatusMsg.className = 'add-task-status';
+    addStatusMsg.textContent = '「' + draft.text + '」を追加しました。週報テキストを作成すると' + (draft.bar ? '「|」付きで' : '') + '書き込まれます。';
+    fillAddNodes(draft.node);
+    renderAddPreview();
+    addText.focus();
+    offerUndo('タスク「' + draft.text + '」を追加しました', snap);
+  }
+
+  function removeAddition(add) {
+    if (!report || !report.additions) return;
+    var snap = snapshotState();
+    report.additions = report.additions.filter(function (a) { return a !== add; });
+    reparseReport();
+    save();
+    renderAll();
+    if (!reportOutput.hidden) renderReportOutput();
+    if (!addForm.hidden) { fillAddNodes(+addNodeSel.value); renderAddPreview(); }
+    offerUndo('追加したタスク「' + add.text + '」を削除しました', snap);
+  }
+
+  document.getElementById('add-task-open').addEventListener('click', function () {
+    if (addForm.hidden) openAddForm(null);
+    else addForm.hidden = true;
+  });
+  document.getElementById('add-task-close').addEventListener('click', function () { addForm.hidden = true; });
+  document.getElementById('add-task-submit').addEventListener('click', submitAddition);
+  addText.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); submitAddition(); }
+  });
+  [addNodeSel, addStatusSel, addDate, addKind, addBar].forEach(function (el) {
+    el.addEventListener('change', renderAddPreview);
+  });
+  addText.addEventListener('input', renderAddPreview);
+  addDate.addEventListener('input', renderAddPreview);
+
   document.getElementById('revert-edits-btn').addEventListener('click', function () {
-    if (!confirm('アプリ上で変更した状態をすべて取り消し、読み込んだ週報の状態に戻しますか？')) return;
+    if (!confirm('アプリ上で変更した状態と追加したタスクをすべて取り消し、読み込んだ週報の状態に戻しますか？')) return;
     report.overrides = {};
+    report.additions = [];
+    reparseReport();
     save();
     renderAll();
     if (!reportOutput.hidden) renderReportOutput();
