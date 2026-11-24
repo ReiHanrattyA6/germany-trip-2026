@@ -925,8 +925,27 @@
   }
   .node-add:hover { background: var(--primary-soft); }
   .diff-list .diff-line { font-family: 'Roboto Mono', 'Zen Kaku Gothic New', monospace; font-size: 11.5px; white-space: pre-wrap; color: var(--text-muted); margin-left: 6px; }
+  .task-row.is-editing { background: var(--surface-alt); }
+  .task-editor {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+    padding: 10px 12px;
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+  .te-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 8px 10px; }
+  .te-grid > * { min-width: 0; }
+  .te-date-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .te-date-row input { width: auto; flex: 1 1 140px; }
+  .te-preview { font-size: 11.5px; }
+  .diff-fields { margin-left: 4px; color: var(--warn); font-weight: 600; }
   @media (max-width: 640px) {
     .add-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .te-grid { grid-template-columns: minmax(0, 1fr); }
   }
 
   .report-output {
@@ -1455,7 +1474,19 @@
         bar: a.bar !== false
       };
     }) : [];
-    return { text: r.text, sourceName: typeof r.sourceName === 'string' ? r.sourceName : '', importedAt: at, overrides: overrides, encoding: encoding, additions: additions };
+    var edits = {};
+    if (r.edits && typeof r.edits === 'object') {
+      Object.keys(r.edits).forEach(function (k) {
+        var e = r.edits[k];
+        if (!/^\d+$/.test(k) || !e || typeof e !== 'object' || typeof e.text !== 'string' || !e.text.trim()) return;
+        edits[k] = {
+          date: typeof e.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.date) ? e.date : '',
+          kind: e.kind === 'on' ? 'on' : 'by',
+          text: e.text.trim()
+        };
+      });
+    }
+    return { text: r.text, sourceName: typeof r.sourceName === 'string' ? r.sourceName : '', importedAt: at, overrides: overrides, encoding: encoding, additions: additions, edits: edits };
   }
 
   function loadTaskPrefs(p) {
@@ -2078,6 +2109,7 @@
         date: date,
         kind: kind,
         inheritedDue: date ? null : inherited,
+        nodeInherited: inherited,
         changed: changed,
         mark: mark,
         path: stack.slice(1).map(function (n) { return n.title; })
@@ -2235,7 +2267,7 @@
   }
 
   // Added tasks count as edits too: they only exist in the app until the report text is regenerated.
-  function isEdited(task) { return !!task.added || effectiveStatus(task) !== task.status; }
+  function isEdited(task) { return !!task.added || !!task.fieldEdited || effectiveStatus(task) !== task.status; }
 
   function isClosed(task) { return STATUS_INFO[effectiveStatus(task)].closed; }
 
@@ -2353,6 +2385,104 @@
     return (a.date || '9999') < (b.date || '9999') ? -1 : (a.date || '9999') > (b.date || '9999') ? 1 : 0;
   }
 
+  function dateFromKey(k) { return k ? new Date(+k.slice(0, 4), +k.slice(5, 7) - 1, +k.slice(8, 10)) : null; }
+
+  function taskKey(t) { return t.added ? 'a:' + t.addition.id : 'l:' + t.mark.line; }
+
+  // Date/text edits to lines already in the report live in report.edits keyed by line, like status overrides.
+  function applyEdits() {
+    if (!reportModel || !report || !report.edits) return;
+    reportModel.tasks.forEach(function (t) {
+      var e = report.edits[t.mark.line];
+      if (!e) return;
+      t.orig = { date: t.date, kind: t.kind, text: t.text };
+      t.date = dateFromKey(e.date);
+      t.kind = t.date ? e.kind : null;
+      t.text = e.text;
+      t.inheritedDue = t.date ? null : t.nodeInherited;
+      t.fieldEdited = true;
+    });
+  }
+
+  function origFields(t) {
+    var o = t.orig || t;
+    return { date: o.date ? keyOf(o.date) : '', kind: o.date ? o.kind : 'by', text: o.text };
+  }
+
+  function dateLabel(key, kind) {
+    if (!key) return '日付なし';
+    return (kind === 'on' ? '実施日 ' : '期限 ') + (+key.slice(5, 7)) + '/' + (+key.slice(8, 10));
+  }
+
+  // Human-readable list of what was edited on a line, e.g. ["期限 11/20→11/27", "内容"].
+  function fieldChanges(t) {
+    if (!t.fieldEdited) return [];
+    var o = origFields(t);
+    var nowKey = t.date ? keyOf(t.date) : '';
+    var out = [];
+    if (o.date !== nowKey || (nowKey && o.kind !== t.kind)) out.push(dateLabel(o.date, o.kind) + '→' + dateLabel(nowKey, t.kind));
+    if (o.text !== t.text) out.push('内容「' + o.text + '」→「' + t.text + '」');
+    return out;
+  }
+
+  // Splits a task line into the part up to the body, the body ("-11/20 内容"), and trailing spaces.
+  function splitTaskBody(line, task) {
+    var mk = task.mark;
+    var start = mk.offset + mk.len;
+    var after = line.slice(start);
+    var lead = /^\s*/.exec(after)[0];
+    if (mk.kind === 'none') {
+      var b = /^[-－‐・•]\s*/.exec(after.slice(lead.length));
+      if (b) lead += b[0];
+    }
+    var rest = after.slice(lead.length);
+    var trail = /\s*$/.exec(rest)[0];
+    return { head: line.slice(0, start) + lead, body: rest.slice(0, rest.length - trail.length), trail: trail };
+  }
+
+  // Rewrites the date and/or text of an existing line, keeping that line's own date notation when it had one.
+  function rewriteTaskBody(line, task, fields, style) {
+    var parts = splitTaskBody(line, task);
+    var body = parts.body;
+    var half = toHalf(body);
+    var o = origFields(task);
+    var lineStyle = Object.assign({}, style);
+    var restText = body;
+    var dashPrefix = '';
+    var f = o.date ? DATE_FMT_RE.exec(half) : null;
+    if (f) {
+      var p = 0;
+      var take = function (n) { var v = body.substr(p, n); p += n; return v; };
+      var dash = take(f[1].length);
+      var dashGap = take(f[2].length);
+      var mon = take(f[3].length);
+      var slash = take(1);
+      var day = take(f[4].length);
+      var gap = take(f[5].length);
+      if (dash) { lineStyle.dash = dash; lineStyle.dashGap = dashGap; }
+      lineStyle.slash = slash;
+      if (gap) lineStyle.dateGap = gap;
+      lineStyle.dateFull = /[０-９]/.test(mon + day);
+      if (+f[3] < 10) lineStyle.datePad = mon.length === 2;
+      else if (+f[4] < 10) lineStyle.datePad = day.length === 2;
+      restText = body.slice(f[0].length);
+    } else {
+      var d = LEADING_DASH_RE.exec(body);
+      if (d) { dashPrefix = d[0]; restText = body.slice(d[0].length); }
+    }
+    var text = fields.text !== o.text ? fields.text : restText;
+    var dateTok = fields.date ? formatReportDate(fields, lineStyle) : dashPrefix;
+    return parts.head + dateTok + text + parts.trail;
+  }
+
+  // The line as it will be written: edited body, then the status word, then the change bar.
+  function renderEditedLine(line, task, status, fields, style) {
+    var l = line;
+    if (fields) l = rewriteTaskBody(l, task, fields, style);
+    if (status !== task.status) l = rewriteTaskLine(l, task, status, style);
+    return l;
+  }
+
   function attachAdditions() {
     if (!reportModel || !report || !report.additions) return;
     var lines = reportLines();
@@ -2450,7 +2580,8 @@
         return;
       }
       if (!isEdited(t)) return;
-      lines[t.mark.line] = rewriteTaskLine(lines[t.mark.line], t, effectiveStatus(t), style);
+      var fields = t.fieldEdited ? { date: t.date ? keyOf(t.date) : '', kind: t.kind || 'by', text: t.text } : null;
+      lines[t.mark.line] = renderEditedLine(lines[t.mark.line], t, effectiveStatus(t), fields, style);
       changedLines[t.mark.line] = true;
     });
     function insertedLines(at) {
@@ -2507,6 +2638,7 @@
 
   function reparseReport() {
     reportModel = report ? parseReport(report.text, new Date(report.importedAt)) : null;
+    applyEdits();
     attachAdditions();
   }
 
@@ -2590,7 +2722,7 @@
       statusEl.textContent = 'タスク行が見つかりませんでした。各行の先頭に <完> <中> <未> <予> などの印が付いているか確認してください。';
       return false;
     }
-    report = { text: text, sourceName: sourceName, importedAt: now.toISOString(), overrides: {}, encoding: encoding || 'utf-8', additions: [] };
+    report = { text: text, sourceName: sourceName, importedAt: now.toISOString(), overrides: {}, encoding: encoding || 'utf-8', additions: [], edits: {} };
     document.getElementById('report-output').hidden = true;
     reportModel = model;
     save();
@@ -3734,11 +3866,15 @@
       addTag.textContent = task.addition.bar ? '追加（|付き）' : '追加';
       addTag.title = '週報テキストを作成すると、この行が書き込まれます';
       textEl.appendChild(addTag);
-    } else if (status !== task.status) {
-      var editTag = document.createElement('span');
-      editTag.className = 'edit-tag';
-      editTag.textContent = '変更: ' + STATUS_INFO[task.status].label + '→' + info.label;
-      textEl.appendChild(editTag);
+    } else {
+      var changes = fieldChanges(task);
+      if (status !== task.status) changes.unshift(STATUS_INFO[task.status].label + '→' + info.label);
+      if (changes.length) {
+        var editTag = document.createElement('span');
+        editTag.className = 'edit-tag';
+        editTag.textContent = '変更: ' + changes.join('・');
+        textEl.appendChild(editTag);
+      }
     }
     main.appendChild(textEl);
     if (showPath && task.path.length) {
@@ -3777,6 +3913,19 @@
       }
       side.appendChild(addBtn);
     }
+    var editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.className = 'btn ghost small';
+    editBtn.textContent = '編集';
+    editBtn.title = '期限・実施日や内容を変更します';
+    editBtn.addEventListener('click', function () {
+      if (taskEditDraft && taskEditDraft.key === taskKey(task)) taskEditDraft = null;
+      else taskEditDraft = { key: taskKey(task), date: task.date ? keyOf(task.date) : '', kind: task.kind || 'by', text: task.text };
+      renderTasks();
+      var ed = document.querySelector('.task-editor .te-date');
+      if (ed) ed.focus();
+    });
+    side.appendChild(editBtn);
     if (task.added) {
       var delBtn = document.createElement('button');
       delBtn.type = 'button';
@@ -3787,7 +3936,172 @@
       side.appendChild(delBtn);
     }
     row.appendChild(side);
+    if (taskEditDraft && taskEditDraft.key === taskKey(task)) {
+      row.classList.add('is-editing');
+      row.appendChild(buildTaskEditor(task));
+    }
     return row;
+  }
+
+  // ---------- editing a task's date / text ----------
+
+  var taskEditDraft = null; // { key, date, kind, text } — survives re-renders while the editor is open
+
+  function shiftDateKey(k, days) {
+    var base = k ? dateFromKey(k) : startOfDay(new Date());
+    return keyOf(addDays(base, days));
+  }
+
+  // The line exactly as it would be written with the draft applied.
+  function editedLinePreview(task, draft) {
+    var style = reportModel.style;
+    var fields = { date: draft.date, kind: draft.kind, text: draft.text.trim() || task.text };
+    if (task.added) {
+      var add = Object.assign({}, task.addition, fields);
+      var l = formatAddedLine(add, task.node, reportLines());
+      return add.bar ? addChangeBar(l, style.bar) : l;
+    }
+    var line = reportLines()[task.mark.line];
+    return addChangeBar(renderEditedLine(line, task, effectiveStatus(task), fields, style), style.bar);
+  }
+
+  function saveTaskEdit(task, draft) {
+    var text = draft.text.trim();
+    if (!text) return false;
+    var snap = snapshotState();
+    if (task.added) {
+      task.addition.date = draft.date;
+      task.addition.kind = draft.kind;
+      task.addition.text = text;
+    } else {
+      if (!report.edits) report.edits = {};
+      var o = origFields(task);
+      var same = o.text === text && o.date === draft.date && (!draft.date || o.kind === draft.kind);
+      if (same) delete report.edits[task.mark.line];
+      else report.edits[task.mark.line] = { date: draft.date, kind: draft.kind, text: text };
+    }
+    taskEditDraft = null;
+    reparseReport();
+    save();
+    renderAll();
+    if (!document.getElementById('report-output').hidden) renderReportOutput();
+    offerUndo('「' + text + '」を変更しました', snap);
+    return true;
+  }
+
+  function buildTaskEditor(task) {
+    var draft = taskEditDraft;
+    var box = document.createElement('div');
+    box.className = 'task-editor';
+
+    var grid = document.createElement('div');
+    grid.className = 'te-grid';
+    function field(label, el, cls) {
+      var l = document.createElement('label');
+      l.className = 'add-field' + (cls ? ' ' + cls : '');
+      l.appendChild(document.createTextNode(label));
+      l.appendChild(el);
+      grid.appendChild(l);
+      return l;
+    }
+    var dateIn = document.createElement('input');
+    dateIn.type = 'date';
+    dateIn.className = 'te-date';
+    dateIn.value = draft.date;
+    var dateWrap = document.createElement('div');
+    dateWrap.className = 'te-date-row';
+    dateWrap.appendChild(dateIn);
+    [['+1日', 1], ['+1週', 7]].forEach(function (b) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn ghost small';
+      btn.textContent = b[0];
+      btn.title = '日付を' + b[0].slice(1) + '後ろにずらす';
+      btn.addEventListener('click', function () { dateIn.value = shiftDateKey(dateIn.value, b[1]); sync(); });
+      dateWrap.appendChild(btn);
+    });
+    var clr = document.createElement('button');
+    clr.type = 'button';
+    clr.className = 'btn ghost small';
+    clr.textContent = '日付なし';
+    clr.addEventListener('click', function () { dateIn.value = ''; sync(); });
+    dateWrap.appendChild(clr);
+    field('日付', dateWrap);
+
+    var kindSel = document.createElement('select');
+    kindSel.className = 'st-select-plain';
+    [['by', '期限（この日まで）'], ['on', '実施日（この日に行う）']].forEach(function (k) {
+      var opt = document.createElement('option');
+      opt.value = k[0];
+      opt.textContent = k[1];
+      kindSel.appendChild(opt);
+    });
+    kindSel.value = draft.kind;
+    field('日付の意味', kindSel);
+
+    var textIn = document.createElement('input');
+    textIn.type = 'text';
+    textIn.value = draft.text;
+    textIn.autocomplete = 'off';
+    field('内容', textIn, 'wide');
+    box.appendChild(grid);
+
+    var pv = document.createElement('pre');
+    pv.className = 'add-preview te-preview';
+    box.appendChild(pv);
+
+    var msg = document.createElement('span');
+    msg.className = 'add-task-status error';
+    var actions = document.createElement('div');
+    actions.className = 'row';
+    var saveBtn = document.createElement('button');
+    saveBtn.type = 'button';
+    saveBtn.className = 'btn small';
+    saveBtn.textContent = '保存';
+    var cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'btn ghost small';
+    cancelBtn.textContent = 'キャンセル';
+    actions.appendChild(saveBtn);
+    actions.appendChild(cancelBtn);
+    if (task.fieldEdited) {
+      var resetBtn = document.createElement('button');
+      resetBtn.type = 'button';
+      resetBtn.className = 'btn ghost small';
+      resetBtn.textContent = '週報の元の内容に戻す';
+      resetBtn.addEventListener('click', function () {
+        var o = origFields(task);
+        saveTaskEdit(task, { date: o.date, kind: o.kind, text: o.text });
+      });
+      actions.appendChild(resetBtn);
+    }
+    actions.appendChild(msg);
+    box.appendChild(actions);
+
+    function sync() {
+      draft.date = dateIn.value || '';
+      draft.kind = kindSel.value === 'on' ? 'on' : 'by';
+      draft.text = textIn.value;
+      kindSel.disabled = !draft.date;
+      pv.textContent = editedLinePreview(task, draft);
+      msg.textContent = '';
+    }
+    function commit() {
+      sync();
+      if (!saveTaskEdit(task, draft)) { msg.textContent = '内容を入力してください。'; textIn.focus(); }
+    }
+    dateIn.addEventListener('input', sync);
+    dateIn.addEventListener('change', sync);
+    kindSel.addEventListener('change', sync);
+    textIn.addEventListener('input', sync);
+    saveBtn.addEventListener('click', commit);
+    cancelBtn.addEventListener('click', function () { taskEditDraft = null; renderTasks(); });
+    box.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { taskEditDraft = null; renderTasks(); }
+      else if (e.key === 'Enter' && !e.isComposing && e.target.tagName === 'INPUT') { e.preventDefault(); commit(); }
+    });
+    sync();
+    return box;
   }
 
   function countNode(node, today) {
@@ -3897,11 +4211,11 @@
     var a = addedTasks().length;
     bar.hidden = !reportModel;
     var parts = [];
-    if (n) parts.push('状態の変更 <b>' + n + '</b> 件');
+    if (n) parts.push('変更 <b>' + n + '</b> 件');
     if (a) parts.push('追加 <b>' + a + '</b> 件');
     document.getElementById('edit-bar-text').innerHTML = parts.length
       ? parts.join('・') + '（週報テキストに反映すると「|」が付きます）'
-      : '状態はチェックボックスや選択肢で変更できます。「＋タスクを追加」で週報に行を足せます。';
+      : '状態はチェックボックスや選択肢で、期限や内容は各行の「編集」で変更できます。「＋タスクを追加」で週報に行を足せます。';
     document.getElementById('revert-edits-btn').hidden = n + a === 0;
   }
 
@@ -3947,9 +4261,18 @@
       to.className = 'st-pill ' + STATUS_INFO[es].cls;
       to.textContent = STATUS_INFO[es].label;
       li.appendChild(name);
-      li.appendChild(from);
-      li.appendChild(arrow);
-      li.appendChild(to);
+      if (es !== t.status) {
+        li.appendChild(from);
+        li.appendChild(arrow);
+        li.appendChild(to);
+      }
+      var fc = fieldChanges(t);
+      if (fc.length) {
+        var fcEl = document.createElement('span');
+        fcEl.className = 'diff-fields';
+        fcEl.textContent = (es !== t.status ? '、' : '') + fc.join('、');
+        li.appendChild(fcEl);
+      }
       diffList.appendChild(li);
     });
     // Kept separately: a textarea normalizes CRLF to LF, which would break the report's own line endings.
@@ -4409,9 +4732,11 @@
   addDate.addEventListener('input', renderAddPreview);
 
   document.getElementById('revert-edits-btn').addEventListener('click', function () {
-    if (!confirm('アプリ上で変更した状態と追加したタスクをすべて取り消し、読み込んだ週報の状態に戻しますか？')) return;
+    if (!confirm('アプリ上で変更した状態・期限・内容と、追加したタスクをすべて取り消し、読み込んだ週報の状態に戻しますか？')) return;
     report.overrides = {};
     report.additions = [];
+    report.edits = {};
+    taskEditDraft = null;
     reparseReport();
     save();
     renderAll();
